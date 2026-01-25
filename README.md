@@ -66,7 +66,7 @@ Consider a initiator sending a packet to a responder with device ID 4 with a rea
 |    4       |        7 to 0            |     Register Byte 2       |   0x00   (for read operations, register byte must be zero ) |
 |    5       |        7 to 0            |     Register Byte 1       |   0x00   (for read operations, register byte must be zero ) |
 |    6       |        7 to 0            |     Register Byte 0       |   0x00   (for read operations, register byte must be zero ) |
-|    7       |        7 to 0            |       CRC-8               |   CRC8_CCITT(0x22,0x10,0x00,0x00,0x00,0x00) = 0xFE          |
+|    7       |        7 to 0            |       CRC-8               |   CRC8_CCITT(0x22,0x10,0x00,0x00,0x00,0x00) = 0x5B          |
 |    8       |        7 to 0            |     End of frame          |                     '#' = 0x23                              |
 
 2. Form the encoded packet.
@@ -86,8 +86,8 @@ Consider a initiator sending a packet to a responder with device ID 4 with a rea
 |    10      |        7 to 0            |    BYTE10_ENCODED         |   char(lower_nibble(BYTE5_UNENCODED)) = '0' = 0x30          |
 |    11      |        7 to 0            |    BYTE11_ENCODED         |   char(upper_nibble(BYTE6_UNENCODED)) = '0' = 0x30          |
 |    12      |        7 to 0            |    BYTE12_ENCODED         |   char(lower_nibble(BYTE6_UNENCODED)) = '0' = 0x30          |
-|    13      |        7 to 0            |    BYTE13_ENCODED         |   char(upper_nibble(BYTE7_UNENCODED)) = 'F' = 0x46          |
-|    14      |        7 to 0            |    BYTE14_ENCODED         |   char(lower_nibble(BYTE7_UNENCODED)) = 'E' = 0x45          |
+|    13      |        7 to 0            |    BYTE13_ENCODED         |   char(upper_nibble(BYTE7_UNENCODED)) = '5' = 0x35          |
+|    14      |        7 to 0            |    BYTE14_ENCODED         |   char(lower_nibble(BYTE7_UNENCODED)) = 'B' = 0x42          |
 |    15      |        7 to 0            |    BYTE15_ENCODED         |                         0x23                                |
 
 3. Assume that responder for device 4 has 32-bit value 0x4519AE50 for register 0x10. The reponder constructs the following unencoded
@@ -106,9 +106,32 @@ Consider a initiator sending a packet to a responder with device ID 4 with a rea
 |    4       |        7 to 0            |     Register Byte 2       |                         0x19                                |
 |    5       |        7 to 0            |     Register Byte 1       |                         0xAE                                |
 |    6       |        7 to 0            |     Register Byte 0       |                         0x50                                |
-|    7       |        7 to 0            |       CRC-8               |   CRC8_CCITT(0x26,0x10,0x45,0x19,0xAE,0x50) = 0xFE          |
+|    7       |        7 to 0            |       CRC-8               |   CRC8_CCITT(0x26,0x10,0x45,0x19,0xAE,0x50) = 0xCB          |
 |    8       |        7 to 0            |     End of frame          |                     '#' = 0x23                              |
 
+4. The unencoded packet is then encoded by the responder and transmitted back to the initiator.
 
+|    BYTE    |    BITFIELD (0 indexed)  |      BIT FIELD NAME       |                           VALUE                             |
+|------------|--------------------------|---------------------------|-------------------------------------------------------------|
+|    0       |        7 to 0            |    Start of Frame         |                           0x2a                              |
+|    1       |        7 to 0            |    BYTE1_ENCODED          |   char(upper_nibble(BYTE1_UNENCODED)) = '2' = 0x32          |
+|    2       |        7 to 0            |    BYTE2_ENCODED          |   char(lower_nibble(BYTE1_UNENCODED)) = '6' = 0x36          |
+|    3       |        7 to 0            |    BYTE3_ENCODED          |   char(upper_nibble(BYTE2_UNENCODED)) = '1' = 0x31          |
+|    4       |        7 to 0            |    BYTE4_ENCODED          |   char(lower_nibble(BYTE2_UNENCODED)) = '0' = 0x30          |
+|    5       |        7 to 0            |    BYTE5_ENCODED          |   char(upper_nibble(BYTE3_UNENCODED)) = '4' = 0x34          |
+|    6       |        7 to 0            |    BYTE6_ENCODED          |   char(lower_nibble(BYTE3_UNENCODED)) = '5' = 0x35          |
+|    7       |        7 to 0            |    BYTE7_ENCODED          |   char(upper_nibble(BYTE4_UNENCODED)) = '1' = 0x31          |
+|    8       |        7 to 0            |    BYTE8_ENCODED          |   char(lower_nibble(BYTE4_UNENCODED)) = '9' = 0x39          |
+|    9       |        7 to 0            |    BYTE9_ENCODED          |   char(upper_nibble(BYTE5_UNENCODED)) = 'A' = 0x41          |
+|    10      |        7 to 0            |    BYTE10_ENCODED         |   char(lower_nibble(BYTE5_UNENCODED)) = 'E' = 0x45          |
+|    11      |        7 to 0            |    BYTE11_ENCODED         |   char(upper_nibble(BYTE6_UNENCODED)) = '5' = 0x35          |
+|    12      |        7 to 0            |    BYTE12_ENCODED         |   char(lower_nibble(BYTE6_UNENCODED)) = '0' = 0x30          |
+|    13      |        7 to 0            |    BYTE13_ENCODED         |   char(upper_nibble(BYTE7_UNENCODED)) = 'C' = 0x43          |
+|    14      |        7 to 0            |    BYTE14_ENCODED         |   char(lower_nibble(BYTE7_UNENCODED)) = 'B' = 0x42          |
+|    15      |        7 to 0            |    BYTE15_ENCODED         |                         0x23                                |
+
+The following diagram shows the architecture diagram of the communication protocol.
+
+<img width="539" height="349" alt="image" src="https://github.com/user-attachments/assets/29eaa13e-f505-45be-bf13-56383fafad3e" />
 
 
