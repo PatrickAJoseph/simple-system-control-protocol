@@ -136,6 +136,15 @@ The following diagram shows the architecture diagram of the communication protoc
 
 <img width="900" height="700" alt="image" src="https://github.com/user-attachments/assets/29eaa13e-f505-45be-bf13-56383fafad3e" />
 
+# Supported languages
+
+The simple system control protocol (herein referred to as SCCP) supports the following programming languages
+
+* Node.js (initiator only)
+* Python (initiator + responder)
+* C (responder stack only)
+* LabVIEW (initiator only)
+
 # Storage of register bitfield information
 
 All bitfields of registers including their description will be documented in a YAML file making maintenance and readability easier.
@@ -159,3 +168,55 @@ Given a base port address M and a device ID N, two ports are opened for connecti
 The initiator uses has the port number `M + 2*N` and the responder uses the port number `M + 2*N + 1`. The initiator sends
 over messages to the responder over port number `M + 2*N` and can read back the response from the responder over port number
 `M + 2*N + 1`. The responder receives a packet over port number `M + 2*N` and sends over its response over `M + 2*N + 1`.
+
+## UART / RS-485 interface
+
+The use of RS-485 interface allows upto 32 devices to be connected on a single RS-485 bus and to be controlled by a single host
+device. This ensures that devices using the SCCP protocol stack can be controlled by a single initiator/master.
+
+## Bluetooth / BLE
+
+The SSCP protocol mandates that the SCCP BLE service UUID has the following format.
+
+|           Byte index (0-indexed)           |                 Description                |
+|--------------------------------------------|--------------------------------------------|
+|                 0                          |                    0x40                    |
+|                 1                          |                 Device ID                  |
+|                 2                          |              Base port number (lower)      |
+|                 3                          |              Base port number (upper)      |
+|               4 - 15                       |                    0xFF                    |
+
+The base port number is used for connecting a BLE device to another application via the socket interface.
+
+The SSCP bluetooth service consists of the following characteristics
+
+1. Initiator write / Responder read (IWRR) characteristic
+   The initiator write characteristic is a 16-byte string. The initiator (host PC consisting of GATT client) writes a 16-byte
+   ASCII encoded packet. The responder has to register a callback in the GATT server associated with this initiator write
+   operation. The IWRR characteristic is a read characteristic from the perspective of a GATT server.
+
+   The following table shows the structure of the IWRR characteristic UUID
+
+   |           Byte index (0-indexed)           |                 Description                |
+   |--------------------------------------------|--------------------------------------------|
+   |                 0                          |                    0x41                    |
+   |                 1                          |                 Device ID                  |
+   |                 2                          |              Base port number (lower)      |
+   |                 3                          |              Base port number (upper)      |
+   |               4 - 15                       |                    0xFF                    |
+
+
+2. Initiator read / Responder write (IRRW) characteristics
+   Once the responder processes the request from the initiator, it has to write a 16-byte string into the IRRW characteristic.
+   The initiator has to register a callback function to capture a write event to the IRRW characteristic. The IWRR characteristic
+   is a write characteristic from the perspective of a GATT server.
+
+   The following table shows the structure of the IRRW characteristic UUID
+
+   |           Byte index (0-indexed)           |                 Description                |
+   |--------------------------------------------|--------------------------------------------|
+   |                 0                          |                    0x42                    |
+   |                 1                          |                 Device ID                  |
+   |                 2                          |              Base port number (lower)      |
+   |                 3                          |              Base port number (upper)      |
+   |               4 - 15                       |                    0xFF                    |
