@@ -130,8 +130,32 @@ Consider a initiator sending a packet to a responder with device ID 4 with a rea
 |    14      |        7 to 0            |    BYTE14_ENCODED         |   char(lower_nibble(BYTE7_UNENCODED)) = 'B' = 0x42          |
 |    15      |        7 to 0            |    BYTE15_ENCODED         |                         0x23                                |
 
+# Architecture diagram of protocol stack
+
 The following diagram shows the architecture diagram of the communication protocol.
 
 <img width="900" height="700" alt="image" src="https://github.com/user-attachments/assets/29eaa13e-f505-45be-bf13-56383fafad3e" />
 
+# Storage of register bitfield information
 
+All bitfields of registers including their description will be documented in a YAML file making maintenance and readability easier.
+A python script `sccp_utils_yaml2c.py` can be used to convert the YAML file into a C header file which can then be used by the
+C application requiring SCCP support.
+
+# Current supported data link protocols
+
+The simple system control protocol (herein referred to as SSCP) supports the following data link protocols (eventhough some of them
+are not technically data link protocols)
+
+* Socket (TCP/IP)
+* UART (RS-485 interface)
+* BLE (one 16-byte string characteristics for Initiator, one 16-byte string character for Responder)
+
+## Socket
+
+The use of socket connections enables the control of an SSCP supported device via the local network.
+
+Given a base port address M and a device ID N, two ports are opened for connection on the local host / target IP address
+The initiator uses has the port number `M + 2*N` and the responder uses the port number `M + 2*N + 1`. The initiator sends
+over messages to the responder over port number `M + 2*N` and can read back the response from the responder over port number
+`M + 2*N + 1`. The responder receives a packet over port number `M + 2*N` and sends over its response over `M + 2*N + 1`.
