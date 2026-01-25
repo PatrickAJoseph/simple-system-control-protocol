@@ -132,6 +132,6 @@ Consider a initiator sending a packet to a responder with device ID 4 with a rea
 
 The following diagram shows the architecture diagram of the communication protocol.
 
-<img width="700" height="500" alt="image" src="https://github.com/user-attachments/assets/29eaa13e-f505-45be-bf13-56383fafad3e" />
+<img width="900" height="700" alt="image" src="https://github.com/user-attachments/assets/29eaa13e-f505-45be-bf13-56383fafad3e" />
 
 
