@@ -1,5 +1,8 @@
 # simple-system-control-protocol
+
 A simple fixed frame transport layer protocol consisting of ASCII character encoding which can be used for register like control of embedded devices. Current supported data link protocols are UART and bluetooth.
+
+# Protocol packet structure
 
 The unencoded packet structure is as follows
 
@@ -40,10 +43,71 @@ table.
 |    12      |        7 to 0            |    BYTE12_ENCODED         |   Character-encoded lower nibble of BYTE6_UNENCODED         |
 |    13      |        7 to 0            |    BYTE13_ENCODED         |   Character-encoded upper nibble of BYTE7_UNENCODED         |
 |    14      |        7 to 0            |    BYTE14_ENCODED         |   Character-encoded lower nibble of BYTE7_UNENCODED         |
-|    15      |        7 to 0            |    BYTE15_ENCODED         |   Takes a constant value of * indicating end of frame       |
+|    15      |        7 to 0            |    BYTE15_ENCODED         |   Takes a constant value of # indicating end of frame       |
 
 If BYTE1_UNENCODED = 0x45, then, BYTE1_ENCODED = char(upper_nibble(BYTE1_UNENCODED)) = char(upper_nibble(0x45)) = char(0x4) = '4'
 BYTE2_ENCODED = char(lower_nibble(BYTE1_UNENCODED)) = char(lower_nibble(0x45)) = char(0x5) = '5'.
+
+The following steps shows the encoding and decoding of a packet exchanged between an initiator and a responder.
+Consider a initiator sending a packet to a responder with device ID 4 with a read request for register 0x10.
+
+1. Form the unencoded packet from the sender side.
+
+|    BYTE    |    BITFIELD (0 indexed)  |      BIT FIELD NAME       |                        VALUE                                |
+|------------|--------------------------|---------------------------|-------------------------------------------------------------|
+|    0       |        7 to 0            |    Start of Frame         |                      '*' = 0x2a                             |
+|    1       |        7 to 3            |    Device identifier      |                         0x04                                |
+|    1       |          2               |    Acknowledgement Bit    |   0x00 (must be always set to zero by the initiator)        |
+|    1       |          1               |     Read Operation        |                         0x01                                |
+|    1       |          0               |     Write Operation       |                         0x00                                |
+|    1       |        7 to 0            |     Net register value    |   (0x04 << 3) | ( 0x00 << 2) | ( 0x01 << 1 ) | 0x00 = 0x22  | 
+|    2       |        7 to 0            |     Register number       |                         0x10                                |
+|    3       |        7 to 0            |     Register Byte 3       |   0x00   (for read operations, register byte must be zero ) |
+|    4       |        7 to 0            |     Register Byte 2       |   0x00   (for read operations, register byte must be zero ) |
+|    5       |        7 to 0            |     Register Byte 1       |   0x00   (for read operations, register byte must be zero ) |
+|    6       |        7 to 0            |     Register Byte 0       |   0x00   (for read operations, register byte must be zero ) |
+|    7       |        7 to 0            |       CRC-8               |   CRC8_CCITT(0x22,0x10,0x00,0x00,0x00,0x00) = 0xFE          |
+|    8       |        7 to 0            |     End of frame          |                     '#' = 0x23                              |
+
+2. Form the encoded packet.
+
+|    BYTE    |    BITFIELD (0 indexed)  |      BIT FIELD NAME       |                           VALUE                             |
+|------------|--------------------------|---------------------------|-------------------------------------------------------------|
+|    0       |        7 to 0            |    Start of Frame         |                           0x2a                              |
+|    1       |        7 to 0            |    BYTE1_ENCODED          |   char(upper_nibble(BYTE1_UNENCODED)) = '2' = 0x32          |
+|    2       |        7 to 0            |    BYTE2_ENCODED          |   char(lower_nibble(BYTE1_UNENCODED)) = '2' = 0x32          |
+|    3       |        7 to 0            |    BYTE3_ENCODED          |   char(upper_nibble(BYTE2_UNENCODED)) = '1' = 0x31          |
+|    4       |        7 to 0            |    BYTE4_ENCODED          |   char(lower_nibble(BYTE2_UNENCODED)) = '0' = 0x30          |
+|    5       |        7 to 0            |    BYTE5_ENCODED          |   char(upper_nibble(BYTE3_UNENCODED)) = '0' = 0x30          |
+|    6       |        7 to 0            |    BYTE6_ENCODED          |   char(lower_nibble(BYTE3_UNENCODED)) = '0' = 0x30          |
+|    7       |        7 to 0            |    BYTE7_ENCODED          |   char(upper_nibble(BYTE4_UNENCODED)) = '0' = 0x30          |
+|    8       |        7 to 0            |    BYTE8_ENCODED          |   char(lower_nibble(BYTE4_UNENCODED)) = '0' = 0x30          |
+|    9       |        7 to 0            |    BYTE9_ENCODED          |   char(upper_nibble(BYTE5_UNENCODED)) = '0' = 0x30          |
+|    10      |        7 to 0            |    BYTE10_ENCODED         |   char(lower_nibble(BYTE5_UNENCODED)) = '0' = 0x30          |
+|    11      |        7 to 0            |    BYTE11_ENCODED         |   char(upper_nibble(BYTE6_UNENCODED)) = '0' = 0x30          |
+|    12      |        7 to 0            |    BYTE12_ENCODED         |   char(lower_nibble(BYTE6_UNENCODED)) = '0' = 0x30          |
+|    13      |        7 to 0            |    BYTE13_ENCODED         |   char(upper_nibble(BYTE7_UNENCODED)) = 'F' = 0x46          |
+|    14      |        7 to 0            |    BYTE14_ENCODED         |   char(lower_nibble(BYTE7_UNENCODED)) = 'E' = 0x45          |
+|    15      |        7 to 0            |    BYTE15_ENCODED         |                         0x23                                |
+
+3. Assume that responder for device 4 has 32-bit value 0x4519AE50 for register 0x10. The reponder constructs the following unencoded
+   response packet first.
+
+|    BYTE    |    BITFIELD (0 indexed)  |      BIT FIELD NAME       |                        VALUE                                |
+|------------|--------------------------|---------------------------|-------------------------------------------------------------|
+|    0       |        7 to 0            |    Start of Frame         |                      '*' = 0x2a                             |
+|    1       |        7 to 3            |    Device identifier      |                         0x04                                |
+|    1       |          2               |    Acknowledgement Bit    |   0x01 (must be always set to one by the responder)         |
+|    1       |          1               |     Read Operation        |                         0x01                                |
+|    1       |          0               |     Write Operation       |                         0x00                                |
+|    1       |        7 to 0            |     Net register value    |   (0x04 << 3) | ( 0x01 << 2) | ( 0x01 << 1 ) | 0x00 = 0x26  | 
+|    2       |        7 to 0            |     Register number       |                         0x10                                |
+|    3       |        7 to 0            |     Register Byte 3       |                         0x45                                |
+|    4       |        7 to 0            |     Register Byte 2       |                         0x19                                |
+|    5       |        7 to 0            |     Register Byte 1       |                         0xAE                                |
+|    6       |        7 to 0            |     Register Byte 0       |                         0x50                                |
+|    7       |        7 to 0            |       CRC-8               |   CRC8_CCITT(0x26,0x10,0x45,0x19,0xAE,0x50) = 0xFE          |
+|    8       |        7 to 0            |     End of frame          |                     '#' = 0x23                              |
 
 
 
