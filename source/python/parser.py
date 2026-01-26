@@ -390,6 +390,56 @@ class device:
 
                    self.registers[register_number].parameters.append(p)
 
-dev = device('test.yaml')
-dev.registers[0].get_parameter("TEST_REG_0_PARAM_0").set(11)
-print(dev.registers[0].get_parameter("TEST_REG_0_PARAM_0").get())
+    # Function to get a register handle.
+
+    def get_register(self, name: str):
+
+        for register in self.registers:
+
+            if( register.name == name ):
+
+                return register
+
+        return None
+    
+    def get_register(self, number: int):
+
+        for register in self.registers:
+
+            if( register.number == number ):
+
+                return register
+
+        return None
+
+    # Function to set a device parameter value in parser base.
+
+    def set_parameter_value(self, name: str, value):
+
+        for register in self.registers:
+
+            for parameter in register.parameters:
+
+                if( parameter.name == name ):
+
+                    parameter.set(value)
+                    register.encode()
+                    return True
+        
+        return False
+    
+    # Function to get a device parameter value in parser base.
+
+    def get_parameter_value(self, name: str):
+
+        for register in self.registers:
+
+            for parameter in register.parameters:
+
+                if( parameter.name == name ):
+
+                    register.decode()
+                    parameter.get()
+                    return True
+        
+        return False

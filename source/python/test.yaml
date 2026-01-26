@@ -46,7 +46,7 @@ regs:
       startbit: 20
       bitlength: 12
       type: "uint"
-      min: 10
+      min: 0
       max: 4095
 
   reg_1:
