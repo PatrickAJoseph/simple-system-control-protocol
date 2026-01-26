@@ -211,3 +211,22 @@ class packet:
         self.value |= ( self.unencoded_bytes[6] << 0 )
 
         return True
+    
+    def check_format(self, bytes: list[int]):
+
+        # Check length of byte string.
+
+        if( len(bytes) != 16 ):
+            return False
+        
+        # Check start of frame character.
+
+        if( self.bytes[0] != int(0x2A) ):
+            return False
+        
+        # Check end of frame character.
+
+        if( self.bytes[15] != int(0x23) ):
+            return False
+
+        return True
