@@ -320,6 +320,10 @@ class device:
             number = int(data['defconfig']['device_number'])
             baseport = int(data['defconfig']['base_port'])
 
+            self.name = name
+            self.number = number
+            self.baseport = baseport
+
             # Count the number of registers.
 
             register_count = 0
