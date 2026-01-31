@@ -17,6 +17,38 @@
 #define SSCP_REQUEST_FIFO_EMPTY     1
 #define SSCP_REQUEST_FIFO_FULL      2
 
+#define SSCP_REGISTER_OPERATION_READ        0
+#define SSCP_REGISTER_OPERATION_WRITE       1
+
+/**
+ *  @brief                  Function typedef for SSCP register callback.  
+ *  @param[in]  reg         Pointer to variable holding register value.
+ *  @param[in]  operation   Operation being done on the register.
+ *                          \p operation can take value SSCP_REGISTER_OPERATION_READ or
+ *                          SSCP_REGISTER_OPERTION_WRITE.
+ *  @return                 None.  
+ */
+
+typedef void (*SSCP_registerCallback)(void* pReg, int operation);
+
+/* SSCP register handler structure. */
+
+typedef struct sscp_register_handler_struct
+{
+    /* Register ID. */
+
+    const int regID;
+
+    /* Pointer to vaiable holding register value. */
+
+    void* pData;
+
+    /* Callback function. */
+
+    SSCP_registerCallback callback;
+
+}SSCP_registerHandle;
+
 /* Typedef for encoded packet. */
 
 typedef struct sscp_encoded_packet_struct 
@@ -25,6 +57,46 @@ typedef struct sscp_encoded_packet_struct
     uint8_t byte[16];
 
 }SSCP_encodedPacket;
+
+/**
+ *  Structure for holding information about a packet.
+ *  
+ *  This structure is used to store information about a packet 
+ *  after decoding of the packet using SSCP_decodePacket and also 
+ *  passed as a parameter to the packet encoding function using SSCP_encodePacket.
+ */
+
+typedef struct SSCP_packetInfo
+{
+    /* Device ID of the initiator. */
+
+    uint8_t deviceID;
+
+    /* Acknowledgement bit which is set during response. */
+
+    uint8_t ack;
+
+    /* Read bit: Set if initiator requests a read operation. */
+
+    uint8_t read;
+
+    /* Write bit: Set if initiator requests a write operation. */
+
+    uint8_t write;
+
+    /* Register ID: The register number which the initiator wants to access. */
+
+    uint8_t regID;
+
+    /* Register data */
+
+    uint32_t regData;
+
+    /* CRC8-CCITT of [(deviceID << 3)|(ack<<2)|(read<<1)|(write<<0), regID, regData]*/
+
+    uint8_t crc8;
+
+}SSCP_packetInfo;
 
 
 /**
@@ -73,6 +145,21 @@ typedef struct sscp_handle
 
     uint8_t rxByteRingBuffer[16];
 
+    /* Pointer to list of register handle structure. */
+
+    SSCP_registerHandle* registerHandles;
+
+    /* Number of entries in register handle list. */
+
+    int registerHandlesCount;
+
+    /* Function to send response packet. */
+
+    /* This callback function must be provided by the user based on the 
+       interface they are using (serial, BT etc.) */
+
+    int (*send)(uint8_t* data, size_t size);
+
 }SSCP_Handle;
 
 /**
@@ -109,8 +196,6 @@ void SSCP_handleRxByte(SSCP_Handle* handle, uint8_t byte);
 
  int SSCP_process(SSCP_Handle* handle);
 
-#ifdef SSCP_DEBUG
-
 /**
  *  @brief              Function to print details about the SSCP instance.
  *  @param[in]  handle  Pointer to SSCP instance.
@@ -120,7 +205,5 @@ void SSCP_handleRxByte(SSCP_Handle* handle, uint8_t byte);
  */
 
 void SSCP_printInfo(SSCP_Handle* handle);
-
-#endif /* SSCP_DEBUG */
 
  #endif /* SSCP_H */
