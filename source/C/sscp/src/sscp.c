@@ -404,16 +404,16 @@ int SSCP_process(SSCP_Handle* handle)
 
     memset( &packet, 0, sizeof(packet) );
 
-    /* Get a packet from the FIFO. */
-
-    SSCP_requestFifoGet(handle, &packet);
-
     /* If the FIFO is empty, do nothing. */
 
     if( handle->requestFifoStatus == SSCP_REQUEST_FIFO_EMPTY )
     {
         return 0;
     }
+
+    /* Get a packet from the FIFO. */
+
+    SSCP_requestFifoGet(handle, &packet);
 
     /* Decode packet got from FIFO. */
 

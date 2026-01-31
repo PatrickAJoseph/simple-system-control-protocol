@@ -18,6 +18,10 @@ static void printEncodedPacket(SSCP_encodedPacket* packet)
         printf("%.2x ", packet->byte[index]);
     }
 
+    packet->byte[16] = 0;
+
+    printf("\nIn string format: %s\n", (char*)packet->byte);
+
     printf("\n");
 }
 
@@ -38,22 +42,32 @@ static SSCP_packetInfo encodedPacketInfo = {0};
 static SSCP_packetInfo decodedPacketInfo = {0};
 static SSCP_encodedPacket encodedPacket = {0};
 
+static SSCP_packetInfo testRequestPacketsInfo[] =
+{
+    {
+      .deviceID = 0,
+      .ack = 0,
+      .read = 1,
+      .write = 0,
+      .regID = 0,
+      .regData = 0x1923U,
+    },
+};
+
 int main(void)
 {
-    encodedPacketInfo.deviceID = 10;
-    encodedPacketInfo.ack = 0;
-    encodedPacketInfo.read = 1;
-    encodedPacketInfo.write = 0;
-    encodedPacketInfo.regID = 2;
-    encodedPacketInfo.regData = 0x3284;
-    
-    SSCP_encodePacket(&encodedPacketInfo, &encodedPacket);
+    int index = 0;
 
-    printEncodedPacket(&encodedPacket);
+    for( index = 0 ; index < sizeof(testRequestPacketsInfo)/sizeof(testRequestPacketsInfo[0]) ; index++ )
+    {
+        SSCP_encodePacket(&testRequestPacketsInfo[index], &encodedPacket);
 
-    SSCP_decodePacket(&decodedPacketInfo, &encodedPacket);
+        printEncodedPacket(&encodedPacket);
 
-    printPacketInfo(&decodedPacketInfo);
+        SSCP_decodePacket(&decodedPacketInfo, &encodedPacket);
+
+        printPacketInfo(&decodedPacketInfo);
+    }
 
     return 0;
 }

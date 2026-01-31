@@ -5,6 +5,40 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define SSCP_REGISTER_HANDLE_LIST_NAME(name)                                        \
+    SSCP_registerHandle_##name
+
+/* Define a SSCP register handle list. */
+
+#define SSCP_REGISTER_HANDLE_LIST(name)                                             \
+    SSCP_registerHandle SSCP_registerHandle_##name[] =
+
+/* Define a SSCP register handle. */
+
+#define SSCP_REGISTER_HANDLE(registerID, registerData, registerCallback)            \
+    {                                                                               \
+        .regID  = registerID,                                                       \
+        .pData  = (void*)&registerData,                                             \
+        .callback = registerCallback,                                               \
+    }
+
+/* Defines an SSCP handle. */
+
+#define SSCP_HANDLE(name, registerHandleList, sendHandler)                                                      \
+                                                                                                                \
+SSCP_Handle  name = {                                                                                         \
+    .requestFifo                        =   {0},                                                                \
+    .requestFifoGetIndex                =   0,                                                                  \
+    .requestFifoPutIndex                =   0,                                                                  \
+    .requestFifoCount                   =   0,                                                                  \
+    .lastRxByte                         =   0,                                                                  \
+    .rxByteRingBuffer                   =   {0},                                                                \
+    .rxByteRingBufferIndex              =   0,                                                                  \
+    .registerHandles                    =   registerHandleList,                                                 \
+    .registerHandlesCount               =   sizeof(registerHandleList)/sizeof(registerHandleList[0]),           \
+    .send                               =   sendHandler,                                                        \
+}
+
 /* Number of packets which can be held by the request FIFO. */
 
 #ifndef SSCP_REQUEST_FIFO_SIZE
