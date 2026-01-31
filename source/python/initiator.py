@@ -2,6 +2,7 @@
 import packet
 import parser
 import socket
+import serial
 
 from enum import Enum
 from typing import IO
@@ -25,6 +26,7 @@ class initiator:
     irrw_socket: socket.socket
     iwrr_address: tuple
     irrw_address: tuple
+    serialHandle: serial.Serial
 
     def __init__(self, file:str, interface: InterfaceType):
 
@@ -76,6 +78,19 @@ class initiator:
 
             print("Initiator: Connected to a initiator socket client @ port {_port}".format(_port = self.irrw_port))
 
+        if( interface == InterfaceType.SERIAL ):
+
+            self.serialHandle = serial.Serial( port = self.device.serialPort, baudrate = self.device.serialBaudRate, timeout = float(self.device.interfaceTimeoutMilliseconds) * 0.001 )
+
+            if( self.serialHandle.is_open ):
+                self.serialHandle.close()
+            
+            self.serialHandle.open()
+
+            # Sending over this pattern flushes the responder's receive byte ring buffer.
+            # This feature is availabe in C implementation of the SSCP responder.
+
+            self.serialHandle.write("*1#".encode('utf-8'))
 
     def add_register_handle(self, reg: int, handle):
 
@@ -165,6 +180,40 @@ class initiator:
 
                 pass
 
+        if( self.interface == InterfaceType.SERIAL ):
+
+            print("Initiator: serial: Posting read request for register: {_name}".format(_name = name))
+
+            self.serialHandle.write(self.stringify_packet(p.bytes))
+
+            print("Initiator: serial: Requested for register: {_name}".format(_name = name))
+
+            response = self.serialHandle.read(16)
+
+            print("Initiator: socket: Received response : {_response}".format(_response = self.stringify_packet(response)))
+
+            print("Initiator: socket: Response packet information.")
+
+            response_packet = packet.packet()
+
+            ret = response_packet.decode(self.unstringify_packet(response))
+
+            response_packet.info()
+
+            if( ret == True ):
+
+                print("Initiator: socket: Response packet valid.")
+
+                self.device.registers[response_packet.reg].set(response_packet.value)
+            else:
+
+                print("Initiator: socket: Response packet invalid.")
+
+                response_packet.info()
+
+                pass
+
+
     def write_register(self, name: str, _value: int ):
 
         reg = self.device.get_register(name)
@@ -204,6 +253,52 @@ class initiator:
 
                 pass
 
+
+        if( self.interface == InterfaceType.SERIAL ):
+
+            print("Initiator: serial: Posting write request for register: {_name}".format(_name = name))
+
+            print("Initiator: serial: Packet to write {_packet}".format(_packet = self.stringify_packet(p.bytes)))
+
+            self.serialHandle.write(self.stringify_packet(p.bytes))
+
+            print("Initiator: serial: Requested for register: {_name}".format(_name = name))
+
+            response = self.serialHandle.read( 16 )
+
+            if( len(response) != 16 ):
+
+                print("Initiator: serial: Timeout event.")
+
+                return False
+
+            else:
+
+                print("Initiator: serial: Timeout event did not occur.")
+
+            print("Initiator: serial: Received response : {_response}".format(_response = self.stringify_packet(response)))
+
+            print("Initiator: serial: Response packet information.")
+
+            response_packet = packet.packet()
+
+            ret = response_packet.decode(self.unstringify_packet(response))
+
+            response_packet.info()
+
+            if( ret == True ):
+
+                print("Initiator: serial: Response packet is valid.")
+
+            else:
+
+                print("Initiator: serial: Response packet is invalid !")
+
+                response_packet.info()
+
+                pass
+
+
     def set_parameter_value(self, name: str, value) -> bool:
         return self.device.set_parameter_value(name, value)
     
@@ -234,28 +329,5 @@ class initiator:
 
         if( ret == False ):
             return False
-        
+
         return self.device.get_parameter_value(name)
-
-x = initiator('test.yaml', InterfaceType.SOCKET)
-
-parameter_names = x.device.get_parameter_names()
-
-for parameter_name in parameter_names:
-
-    min, max = x.device.get_parameter_limits(parameter_name)
-
-    for i in range( int(min), int(max) + 1 ):
-        x.set_parameter_value_in_device(parameter_name, i)
-
-        ret = x.get_parameter_value_from_device(parameter_name)
-
-        print("Parameter name: {_name}".format(_name = parameter_name))
-        print("Expected value: {_expected}".format(_expected = i))
-        print("Observed value: {_observed}".format(_observed = ret))
-
-        if( ret == i ):
-            print(">>>> PASSED")
-        else:
-            print(">>>> FAILED")
-            break

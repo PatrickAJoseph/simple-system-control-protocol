@@ -315,6 +315,9 @@ class device:
     number: int
     baseport: int
     file: IO
+    serialPort: str
+    serialBaudRate: int
+    interfaceTimeoutMilliseconds: int
 
     def __init__(self, file):
         self.file = file
@@ -331,6 +334,10 @@ class device:
             name = data['defconfig']['name']
             number = int(data['defconfig']['device_number'])
             baseport = int(data['defconfig']['base_port'])
+
+            self.serialPort = data['defconfig']['serial_port']
+            self.serialBaudRate = int(data['defconfig']['serial_baud_rate'])
+            self.interfaceTimeoutMilliseconds = int(data['defconfig']['interface_timeout_ms'])
 
             self.name = name
             self.number = number

@@ -67,7 +67,7 @@ void led0_register_callback(void* reg, int operation)
         }
         else if( led0->blink )
         {
-            for( index = 0 ; index < led0->blink_count ; index++ )
+            for( index = 0 ; index < 2 * led0->blink_count ; index++ )
             {
                 GPIO_toggle(CONFIG_GPIO_LED_0);
                 usleep( 1000 * (uint32_t)led0->blink_interval_ms );
@@ -105,7 +105,7 @@ void led1_register_callback(void* reg, int operation)
         }
         else if( led1->blink )
         {
-            for( index = 0 ; index < led1->blink_count ; index++ )
+            for( index = 0 ; index < 2 * led1->blink_count ; index++ )
             {
                 GPIO_toggle(CONFIG_GPIO_LED_1);
                 usleep( 1000 * (uint32_t)led1->blink_interval_ms );
@@ -208,6 +208,6 @@ void *mainThread(void *arg0)
 
         sem_wait(&sem);
 
-        SSCP_process(&sscpSerialHandle);
+        (void)SSCP_process(&sscpSerialHandle);
     }
 }

@@ -9,7 +9,7 @@
 #define SSCP_END_OF_PACKET_BYTE       ((uint8_t)'#')
 
 #define SSCP_NIBBLE_TO_HEXCHAR(x)     ("0123456789ABCDEF"[x])  
-#define SSCP_HEXCHAR_TO_NIBBLE(x)     ((uint8_t)( ( x < 'A' ) ? ( x - '0' ) : ( x - '1' ) ))
+#define SSCP_HEXCHAR_TO_NIBBLE(x)     ((uint8_t)( ( x < 'A' ) ? ( x - '0' ) : ( (x) - 'A' + 10 ) ))
 
 void SSCP_init(SSCP_Handle* handle)
 {
@@ -298,9 +298,6 @@ int SSCP_decodePacket(SSCP_packetInfo* packetInfo, SSCP_encodedPacket* packet)
     }
 
     /* Extract data from unencoded bytes. */
-
-    uint8_t lowNibble;
-    uint8_t highNibble;
 
     unencodedPacket[1]  = ( (uint8_t)SSCP_HEXCHAR_TO_NIBBLE(packet->byte[1]) << 4 );
     unencodedPacket[1] |= (uint8_t)SSCP_HEXCHAR_TO_NIBBLE(packet->byte[2]);

@@ -1,0 +1,185 @@
+
+# Each device requires a seperate YAML file.
+# This ensures modularity with respect to the application.
+# Each connection to a device requires a seperate YAML file.
+
+# This YAML file is an example for LP_EM_CC2340R5 from Texas Instruments.
+# This is used in association with demos/lp_em_cc2340r5/sscp_serial or with
+# demos/lp_em_cc2340r5/sscp_bt.
+
+defconfig:
+  
+  # Device name.
+  name: "test_lp_em_cc2340r5"
+
+  # Common configuration settings.
+  device_number: 0
+
+  # Serial interface COM port.
+  serial_port: "COM9"
+
+  # Serial baud rate.
+  serial_baud_rate: 115200
+
+  # BLE/socket base port number.
+  base_port: 3000
+
+  # Timeout
+  interface_timeout_ms:  15000
+
+### Device register description.
+
+regs:
+  reg_0:
+    number: 0
+    name: "LED0_CONTROL"
+    comment: "LED0 control register."
+
+    parameter_0:
+      number: 0
+      name: "led0_state"
+      startbit: 0
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+    
+    parameter_1:
+      number: 1
+      name: "led0_on"
+      startbit: 1
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_2:
+      number: 2
+      name: "led0_off"
+      startbit: 2
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_3:
+      number: 3
+      name: "led0_toggle"
+      startbit: 3
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_4:
+      number: 4
+      name: "led0_blink"
+      startbit: 4
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_5:
+      number: 5
+      name: "led0_blink_count"
+      startbit: 5
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_6:
+      number: 6
+      name: "led0_blink_interval_ms"
+      startbit: 13
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 10000
+
+    parameter_7:
+      number: 7
+      name: "led0_reserved"
+      startbit: 29
+      bitlength: 3
+      type: "uint"
+      min: 0
+      max: 7
+
+  reg_1:
+    number: 1
+    name: "LED1_CONTROL"
+    comment: "LED1 control register."
+
+    parameter_0:
+      number: 0
+      name: "led1_state"
+      startbit: 0
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+    
+    parameter_1:
+      number: 1
+      name: "led1_on"
+      startbit: 1
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_2:
+      number: 2
+      name: "led1_off"
+      startbit: 2
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_3:
+      number: 3
+      name: "led1_toggle"
+      startbit: 3
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_4:
+      number: 4
+      name: "led1_blink"
+      startbit: 4
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_5:
+      number: 5
+      name: "led1_blink_count"
+      startbit: 5
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_6:
+      number: 6
+      name: "led1_blink_interval_ms"
+      startbit: 13
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 10000
+
+    parameter_7:
+      number: 7
+      name: "led1_reserved"
+      startbit: 29
+      bitlength: 3
+      type: "uint"
+      min: 0
+      max: 7
