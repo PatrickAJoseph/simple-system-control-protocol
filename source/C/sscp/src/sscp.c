@@ -147,39 +147,6 @@ static void SSCP_requestFifoGet(SSCP_Handle* handle, SSCP_encodedPacket* packet)
     }
 }
 
-void SSCP_handleRxByte(SSCP_Handle* handle, uint8_t byte)
-{
-    handle->lastRxByte = byte;
-
-    if( handle->rxByteRingBufferIndex < 16 )
-    {
-        handle->rxByteRingBuffer[handle->rxByteRingBufferIndex] = byte;
-
-        handle->rxByteRingBufferIndex++;
-
-        /* Check if a complete packet is received. */
-
-        if( handle->rxByteRingBufferIndex == 16 )
-        {
-            /* Check if start of packet and end of packet characters are correct. */
-
-            if( ( handle->rxByteRingBuffer[0] == SSCP_START_OF_PACKET_BYTE ) &&    \
-                ( handle->rxByteRingBuffer[15] == SSCP_END_OF_PACKET_BYTE ) )
-                {
-                    /* Push received packet into FIFO. */
-
-                    SSCP_requestFifoPut(handle, (SSCP_encodedPacket*)handle->rxByteRingBuffer);
-                }
-                
-
-            /* Reset RX byte ring buffer. */
-
-            handle->rxByteRingBufferIndex = 0;
-
-            memset( handle->rxByteRingBuffer, 0, sizeof(handle->rxByteRingBuffer) );
-        }
-    }
-}
 
 /**
  * @brief               Calculates CRC8-CCITT of \p data of size \p size.
@@ -389,6 +356,62 @@ int SSCP_decodePacket(SSCP_packetInfo* packetInfo, SSCP_encodedPacket* packet)
 
     return 0;
 }
+
+void SSCP_handleRxByte(SSCP_Handle* handle, uint8_t byte)
+{
+    static SSCP_packetInfo SSCP_requestPacketInfo = {0};
+    int ret;
+
+    memset( &SSCP_requestPacketInfo, 0, sizeof(SSCP_packetInfo) );
+
+    handle->lastRxByte = byte;
+
+    if( handle->rxByteRingBufferIndex < 16 )
+    {
+        handle->rxByteRingBuffer[handle->rxByteRingBufferIndex] = byte;
+
+        handle->rxByteRingBufferIndex++;
+
+        /* If termination character is received and if sufficient bytes are not received, do a reset. */
+
+        if( ( byte == SSCP_END_OF_PACKET_BYTE ) && ( handle->rxByteRingBufferIndex != 16 ) )
+        {
+            handle->rxByteRingBufferIndex = 0;
+            memset( handle->rxByteRingBuffer, 0, sizeof(handle->rxByteRingBuffer) );
+        }
+
+        /* Check if a complete packet is received. */
+
+        if( handle->rxByteRingBufferIndex == 16 )
+        {
+            /* Check if start of packet and end of packet characters are correct. */
+
+            if( ( handle->rxByteRingBuffer[0] == SSCP_START_OF_PACKET_BYTE ) &&    \
+                ( handle->rxByteRingBuffer[15] == SSCP_END_OF_PACKET_BYTE ) )
+                {
+                    /* Before storing in FIFO, check if received packet belongs to
+                       the current device. */
+
+                    ret = SSCP_decodePacket( &SSCP_requestPacketInfo, (SSCP_encodedPacket*)handle->rxByteRingBuffer );
+
+                    if( ret && ( handle->deviceID == SSCP_requestPacketInfo.deviceID ) )
+                    {
+                        /* Push received packet into FIFO. */
+
+                        SSCP_requestFifoPut(handle, (SSCP_encodedPacket*)handle->rxByteRingBuffer);
+                    }
+                }
+                
+
+            /* Reset RX byte ring buffer. */
+
+            handle->rxByteRingBufferIndex = 0;
+
+            memset( handle->rxByteRingBuffer, 0, sizeof(handle->rxByteRingBuffer) );
+        }
+    }
+}
+
 
 int SSCP_process(SSCP_Handle* handle)
 {

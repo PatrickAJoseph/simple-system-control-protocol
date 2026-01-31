@@ -49,7 +49,80 @@
 #include "sscp.h"
 
 static sem_t sem;
-static volatile size_t numBytesRead;
+
+UART2_Handle uart;
+UART2_Params uartParams;
+
+/* Define register structures. */
+
+struct led_register
+{
+    uint32_t state              : 1;         //  State of LED.
+    uint32_t on                 : 1;         //  LED on command bit.
+    uint32_t off                : 1;         //  LED off command bit.
+    uint32_t toggle             : 1;         //  LED toggle command.
+    uint32_t blink_start        : 1;         //  LED blink start command.
+    uint32_t blink_stop         : 1;         //  LED blink stop command.
+    uint32_t blink_count        : 8;         //  Number of times to blink the LED.
+    uint32_t blink_interval_ms  : 16;        //  LED blink interval in milli-seconds.
+    uint32_t reserved           : 2;         //  Reserved bits.  
+};
+
+struct led_register led0_register;
+struct led_register led1_register;
+
+/* Define callbacks for registers. */
+
+void led0_register_callback(void* reg, int operation)
+{
+    struct led_register* led0;
+
+    if( operation == SSCP_REGISTER_OPERATION_READ )
+    {
+
+    }
+    else if( operation == SSCP_REGISTER_OPERATION_WRITE )
+    {
+        
+    }
+}
+
+void led1_register_callback(void* reg, int operation)
+{
+    struct led_register* led0;
+
+    if( operation == SSCP_REGISTER_OPERATION_READ )
+    {
+
+    }
+    else if( operation == SSCP_REGISTER_OPERATION_WRITE )
+    {
+        
+    }
+}
+
+/* Create a list of register defines. */
+
+static SSCP_REGISTER_HANDLE_LIST(sscpSerialHandleList)
+{
+    SSCP_REGISTER_HANDLE( 0, led0_register, led0_register_callback ),
+    SSCP_REGISTER_HANDLE( 0, led1_register, led1_register_callback ),
+};
+
+/* Function prototype for UART transmitter. */
+
+int UART_send(uint8_t* data, size_t size)
+{
+    int ret = 0;
+
+    ret = UART2_write(uart, data, size, NULL);
+
+    return ( ( ret == UART2_STATUS_SUCCESS ) ? 1 : 0 );
+}
+
+/* Create SSCP handle. */
+
+SSCP_HANDLE(sscpSerialHandle, SSCP_REGISTER_HANDLE_LIST_NAME(sscpSerialHandleList), UART_send, 0);
 
 /* UART2 callback function. */
 
@@ -61,9 +134,18 @@ void callbackFxn(UART2_Handle handle, void *buffer, size_t count, void *userArg,
         while (1) {}
     }
 
-    numBytesRead = count;
+    int index;
+
+    /* Update SSCP from producer process. */
+
+    for( index = 0 ; index < count ; index++ )
+    {
+        SSCP_handleRxByte(&sscpSerialHandle, ((uint8_t*)buffer)[index] );
+    }
+
     sem_post(&sem);
 }
+
 
 /*
  *  ======== mainThread ========
@@ -72,8 +154,6 @@ void *mainThread(void *arg0)
 {
     char input;
     const char echoPrompt[] = "Echoing characters:\r\n";
-    UART2_Handle uart;
-    UART2_Params uartParams;
     int32_t semStatus;
     uint32_t status = UART2_STATUS_SUCCESS;
 
@@ -115,8 +195,6 @@ void *mainThread(void *arg0)
     /* Loop forever echoing */
     while (1)
     {
-        numBytesRead = 0;
-
         /* Pass NULL for bytesRead since it's not used in this example */
         status = UART2_read(uart, &input, 1, NULL);
 
@@ -126,18 +204,8 @@ void *mainThread(void *arg0)
             while (1) {}
         }
 
-        /* Do not write until read callback executes */
         sem_wait(&sem);
 
-        if (numBytesRead > 0)
-        {
-            status = UART2_write(uart, &input, 1, NULL);
-
-            if (status != UART2_STATUS_SUCCESS)
-            {
-                /* UART2_write() failed */
-                while (1) {}
-            }
-        }
+        SSCP_process(&sscpSerialHandle);
     }
 }

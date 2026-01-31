@@ -24,13 +24,14 @@
 
 /* Defines an SSCP handle. */
 
-#define SSCP_HANDLE(name, registerHandleList, sendHandler)                                                      \
+#define SSCP_HANDLE(name, registerHandleList, sendHandler, deviceID)                                            \
                                                                                                                 \
-SSCP_Handle  name = {                                                                                         \
+SSCP_Handle  name = {                                                                                           \
     .requestFifo                        =   {0},                                                                \
     .requestFifoGetIndex                =   0,                                                                  \
     .requestFifoPutIndex                =   0,                                                                  \
     .requestFifoCount                   =   0,                                                                  \
+    .requestFifoStatus                  =   SSCP_REQUEST_FIFO_EMPTY,                                            \
     .lastRxByte                         =   0,                                                                  \
     .rxByteRingBuffer                   =   {0},                                                                \
     .rxByteRingBufferIndex              =   0,                                                                  \
@@ -102,7 +103,7 @@ typedef struct sscp_encoded_packet_struct
 
 typedef struct SSCP_packetInfo
 {
-    /* Device ID of the initiator. */
+    /* Device ID of the initiator. This is used to filter out packets based on device ID. */
 
     uint8_t deviceID;
 
@@ -141,6 +142,10 @@ typedef struct SSCP_packetInfo
 
 typedef struct sscp_handle
 {
+    /* Device ID */
+
+    const int deviceID;
+
     /* FIFO to hold encoded packets received through interface. */
 
     SSCP_encodedPacket requestFifo[SSCP_REQUEST_FIFO_SIZE];

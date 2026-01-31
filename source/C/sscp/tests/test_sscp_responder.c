@@ -31,7 +31,7 @@ SSCP_REGISTER_HANDLE_LIST(sscpTestHandleList)
     SSCP_REGISTER_HANDLE( 0, register0Data, register0_callback ),
 };
 
-static SSCP_HANDLE(sscpTestHandle,SSCP_REGISTER_HANDLE_LIST_NAME(sscpTestHandleList),send);
+static SSCP_HANDLE(sscpTestHandle,SSCP_REGISTER_HANDLE_LIST_NAME(sscpTestHandleList),send, 0);
 
 
 /* List of test request packets. */
