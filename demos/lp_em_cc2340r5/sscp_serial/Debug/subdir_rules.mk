@@ -12,24 +12,24 @@ SHELL = cmd.exe
 	@echo 'Finished building: "$<"'
 	@echo ' '
 
-build-1762986371: ../uart2callback.syscfg
+build-1955332186: ../sscp_serial.syscfg
 	@echo 'Building file: "$<"'
 	@echo 'Invoking: SysConfig'
-	"C:/ti/sysconfig_1.23.2/sysconfig_cli.bat" -s "C:/ti/simplelink_lowpower_f3_sdk_9_14_01_16/.metadata/product.json" --script "F:/Projects/simple-system-control-protocol/simple-system-control-protocol/demos/lp_em_cc2340r5/sscp_serial/uart2callback.syscfg" -o "syscfg" --compiler gcc
+	"C:/ti/sysconfig_1.23.2/sysconfig_cli.bat" -s "C:/ti/simplelink_lowpower_f3_sdk_9_14_01_16/.metadata/product.json" --script "F:/Projects/simple-system-control-protocol/simple-system-control-protocol/demos/lp_em_cc2340r5/sscp_serial/sscp_serial.syscfg" -o "syscfg" --compiler gcc
 	@echo 'Finished building: "$<"'
 	@echo ' '
 
-syscfg/ti_devices_config.c: build-1762986371 ../uart2callback.syscfg
-syscfg/ti_drivers_config.c: build-1762986371
-syscfg/ti_drivers_config.h: build-1762986371
-syscfg/ti_utils_build_linker.cmd.genlibs: build-1762986371
-syscfg/ti_utils_build_linker.cmd.genmap: build-1762986371
-syscfg/ti_utils_build_compiler.opt: build-1762986371
-syscfg/syscfg_c.rov.xs: build-1762986371
-syscfg/FreeRTOSConfig.h: build-1762986371
-syscfg/ti_freertos_config.c: build-1762986371
-syscfg/ti_freertos_portable_config.c: build-1762986371
-syscfg: build-1762986371
+syscfg/ti_devices_config.c: build-1955332186 ../sscp_serial.syscfg
+syscfg/ti_drivers_config.c: build-1955332186
+syscfg/ti_drivers_config.h: build-1955332186
+syscfg/ti_utils_build_linker.cmd.genlibs: build-1955332186
+syscfg/ti_utils_build_linker.cmd.genmap: build-1955332186
+syscfg/ti_utils_build_compiler.opt: build-1955332186
+syscfg/syscfg_c.rov.xs: build-1955332186
+syscfg/FreeRTOSConfig.h: build-1955332186
+syscfg/ti_freertos_config.c: build-1955332186
+syscfg/ti_freertos_portable_config.c: build-1955332186
+syscfg: build-1955332186
 
 syscfg/%.o: ./syscfg/%.c $(GEN_OPTS) | $(GEN_FILES) $(GEN_MISC_FILES)
 	@echo 'Building file: "$<"'

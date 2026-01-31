@@ -6,7 +6,7 @@ SHELL = cmd.exe
 
 # Add inputs and outputs from these tool invocations to the build variables 
 SYSCFG_SRCS += \
-../uart2callback.syscfg 
+../sscp_serial.syscfg 
 
 LDS_SRCS += \
 ../lpf3_cc23xx_freertos.lds 
@@ -97,6 +97,6 @@ C_SRCS__QUOTED += \
 "./syscfg/ti_freertos_portable_config.c" 
 
 SYSCFG_SRCS__QUOTED += \
-"../uart2callback.syscfg" 
+"../sscp_serial.syscfg" 
 
 

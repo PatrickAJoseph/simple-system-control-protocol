@@ -1,38 +1,4 @@
-/*
- * Copyright (c) 2020, Texas Instruments Incorporated
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * *  Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * *  Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * *  Neither the name of Texas Instruments Incorporated nor the names of
- *    its contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
-/*
- *  ======== uart2callback.c ========
- */
 #include <stdint.h>
 #include <stddef.h>
 
@@ -61,11 +27,10 @@ struct led_register
     uint32_t on                 : 1;         //  LED on command bit.
     uint32_t off                : 1;         //  LED off command bit.
     uint32_t toggle             : 1;         //  LED toggle command.
-    uint32_t blink_start        : 1;         //  LED blink start command.
-    uint32_t blink_stop         : 1;         //  LED blink stop command.
+    uint32_t blink              : 1;         //  LED blink command.
     uint32_t blink_count        : 8;         //  Number of times to blink the LED.
     uint32_t blink_interval_ms  : 16;        //  LED blink interval in milli-seconds.
-    uint32_t reserved           : 2;         //  Reserved bits.  
+    uint32_t reserved           : 3;         //  Reserved bits.  
 };
 
 struct led_register led0_register;
@@ -75,29 +40,77 @@ struct led_register led1_register;
 
 void led0_register_callback(void* reg, int operation)
 {
-    struct led_register* led0;
+    struct led_register* led0 = reg;
+
+    int index;
 
     if( operation == SSCP_REGISTER_OPERATION_READ )
     {
-
+        led0->state = GPIO_read(CONFIG_GPIO_LED_0);
     }
     else if( operation == SSCP_REGISTER_OPERATION_WRITE )
     {
-        
+        if( led0->on )
+        {
+            GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
+            led0->state = 1;
+        }
+        else if( led0->off )
+        {
+            GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
+            led0->state = 0;
+        }
+        else if( led0->toggle )
+        {
+            GPIO_toggle(CONFIG_GPIO_LED_0);
+            led0->state ^= 1;
+        }
+        else if( led0->blink )
+        {
+            for( index = 0 ; index < led0->blink_count ; index++ )
+            {
+                GPIO_toggle(CONFIG_GPIO_LED_0);
+                usleep( 1000 * (uint32_t)led0->blink_interval_ms );
+            }
+        }
     }
 }
 
 void led1_register_callback(void* reg, int operation)
 {
-    struct led_register* led0;
+    struct led_register* led1 = reg;
+
+    int index;
 
     if( operation == SSCP_REGISTER_OPERATION_READ )
     {
-
+        led1->state = GPIO_read(CONFIG_GPIO_LED_1);
     }
     else if( operation == SSCP_REGISTER_OPERATION_WRITE )
     {
-        
+        if( led1->on )
+        {
+            GPIO_write(CONFIG_GPIO_LED_1, CONFIG_GPIO_LED_ON);
+            led1->state = 1;
+        }
+        else if( led1->off )
+        {
+            GPIO_write(CONFIG_GPIO_LED_1, CONFIG_GPIO_LED_OFF);
+            led1->state = 0;
+        }
+        else if( led1->toggle )
+        {
+            GPIO_toggle(CONFIG_GPIO_LED_1);
+            led1->state ^= 1;
+        }
+        else if( led1->blink )
+        {
+            for( index = 0 ; index < led1->blink_count ; index++ )
+            {
+                GPIO_toggle(CONFIG_GPIO_LED_1);
+                usleep( 1000 * (uint32_t)led1->blink_interval_ms );
+            }
+        }
     }
 }
 
@@ -106,7 +119,7 @@ void led1_register_callback(void* reg, int operation)
 static SSCP_REGISTER_HANDLE_LIST(sscpSerialHandleList)
 {
     SSCP_REGISTER_HANDLE( 0, led0_register, led0_register_callback ),
-    SSCP_REGISTER_HANDLE( 0, led1_register, led1_register_callback ),
+    SSCP_REGISTER_HANDLE( 1, led1_register, led1_register_callback ),
 };
 
 /* Function prototype for UART transmitter. */
@@ -153,23 +166,22 @@ void callbackFxn(UART2_Handle handle, void *buffer, size_t count, void *userArg,
 void *mainThread(void *arg0)
 {
     char input;
-    const char echoPrompt[] = "Echoing characters:\r\n";
     int32_t semStatus;
     uint32_t status = UART2_STATUS_SUCCESS;
 
     /* Call driver init functions */
     GPIO_init();
 
-    /* Configure the LED pin */
+    /* Configure the LED pins */
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(CONFIG_GPIO_LED_1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
 
     /* Create semaphore */
     semStatus = sem_init(&sem, 0, 0);
 
     if (semStatus != 0)
     {
-        /* Error creating semaphore */
-        while (1) {}
+        __asm volatile("bkpt 0");
     }
 
     /* Create a UART in CALLBACK read mode */
@@ -182,26 +194,16 @@ void *mainThread(void *arg0)
 
     if (uart == NULL)
     {
-        /* UART2_open() failed */
-        while (1) {}
+        __asm volatile("bkpt 0");
     }
 
-    /* Turn on user LED to indicate successful initialization */
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
-
-    /* Pass NULL for bytesWritten since it's not used in this example */
-    UART2_write(uart, echoPrompt, sizeof(echoPrompt), NULL);
-
-    /* Loop forever echoing */
     while (1)
     {
-        /* Pass NULL for bytesRead since it's not used in this example */
         status = UART2_read(uart, &input, 1, NULL);
 
         if (status != UART2_STATUS_SUCCESS)
         {
-            /* UART2_read() failed */
-            while (1) {}
+            __asm volatile("bkpt 0");
         }
 
         sem_wait(&sem);

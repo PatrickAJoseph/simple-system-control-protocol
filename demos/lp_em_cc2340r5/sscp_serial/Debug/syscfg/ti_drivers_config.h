@@ -39,6 +39,9 @@ extern "C" {
 extern const uint_least8_t CONFIG_GPIO_LED_0_CONST;
 #define CONFIG_GPIO_LED_0 14
 
+extern const uint_least8_t CONFIG_GPIO_LED_1_CONST;
+#define CONFIG_GPIO_LED_1 15
+
 /* Owned by CONFIG_UART2_0 as  */
 extern const uint_least8_t CONFIG_GPIO_UART2_0_TX_CONST;
 #define CONFIG_GPIO_UART2_0_TX 20
