@@ -106,6 +106,10 @@ class parameter:
         bitmask = (1 << int(self.bitlength) ) - 1
         bitpos = self.startbit
 
+        print("Parser: parameter: encode: Parameter name = {_x}".format(_x = self.name))
+        print("Parser: parameter: encode: Bitmask = {_x}".format(_x = self.bitlength))
+        print("Parser: parameter: encode: Start bit = {_x}".format(_x = self.startbit))
+
         # Validate if parameter value is within range.
 
         self.set(self.value)
@@ -125,6 +129,8 @@ class parameter:
 
         result = result & 0xFFFFFFFF
 
+        print("Parser: parameter: encode: Parameter bitfield : {_x}".format( _x = hex(result) ))
+
         return result
 
     ##
@@ -138,9 +144,15 @@ class parameter:
         bitmask = ( 1 << int(self.bitlength) ) - 1
         bitpos  = int(self.startbit)
 
+        print("Parser: parameter: decode: Parameter name: {_x}".format( _x = self.name))
+        print("Parser: parameter: decode: Bit mask: {_x}".format( _x = hex(bitmask)))
+        print("Parser: parameter: decode: Start bit: {_x}".format( _x = bitpos ))
+
         # Extract bitfield for target parameter.
 
         result = (regval >> bitpos) & bitmask
+
+        print("Parser: parameter: decode: extracted result: {_value}".format( _value = hex(result) ))
 
         # Limit range to 32-bits.
 
@@ -157,12 +169,10 @@ class parameter:
             # -(2^bitlength - 1) to +(2^bitlength - 1). 
 
             if( result > ( bitmask >> 1 ) ):
-                result = result - bitmask + 1
+                result = bitmask - result + 1
                 result = -result
             else:
                 result = int(result)
-
-            result = result & 0xFFFFFFFF
 
             self.value = float(result)
 
@@ -170,6 +180,8 @@ class parameter:
 
         if( self.type == parameter_type.FLOAT ):
             self.value = float( struct.unpack('!f', struct.pack('!I', result))[0] )
+
+        print("Parser: parameter: decode: parameter value = {_value}".format(_value = self.value))
 
         return self.value
 
@@ -405,15 +417,19 @@ class device:
                 return register
 
         return None
-    
-    def get_register(self, number: int):
+
+    # Function to get register handle for specific parameter.
+
+    def get_parameter_register(self, name: str):
 
         for register in self.registers:
 
-            if( register.number == number ):
+            for parameter in register.parameters:
 
-                return register
+                if( parameter.name == name ):
 
+                    return register
+        
         return None
 
     # Function to set a device parameter value in parser base.
@@ -443,7 +459,33 @@ class device:
                 if( parameter.name == name ):
 
                     register.decode()
-                    parameter.get()
-                    return True
+                    ret = parameter.get()
+                    return ret
         
-        return False
+        return None
+
+    # Function to get the limits of a parameter.
+
+    def get_parameter_limits(self, name: str):
+
+        for register in self.registers:
+
+            for parameter in register.parameters:
+
+                if( parameter.name == name ):
+
+                    return (parameter.min, parameter.max)
+        
+        return None
+    
+    def get_parameter_names(self):
+
+        names = []
+
+        for register in self.registers:
+
+            for parameter in register.parameters:
+
+                names.append(parameter.name)
+        
+        return names

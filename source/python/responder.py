@@ -93,13 +93,188 @@ class responder:
         if(is_unique):
             self.callback_table.append( ( reg, handle ) )
     
-    def read_register(self, name: str):
+    def stringify_packet(self, packet):
 
-        reg = self.device.get_register(name)
+        s_packet = b''
 
-        p = packet.packet()
-        p.encode( device_id = self.device.number, ack = False, read = True, write = False, reg = reg.number, value = 0 )
+        for p in packet:
 
-        #if( self.interface == InterfaceType.SOCKET ):
+            x = p.to_bytes(1)
+            s_packet = s_packet + x
 
-responder = responder('test.yaml', InterfaceType.SOCKET)
+        return s_packet
+
+    def unstringify_packet(self, packet: bytes):
+
+        p = []
+
+        for _p in packet:
+
+            p.append(int(_p))
+        
+        return p
+
+    def recv_exact(self, sock, size):
+        data = b""
+        while len(data) < size:
+            chunk = sock.recv(size - len(data))
+            if not chunk:
+                raise ConnectionError("Socket closed")
+            data += chunk
+        return data
+
+    def process(self):
+
+        if( self.interface == InterfaceType.SOCKET ):
+
+            try:
+                request = self.recv_exact( self.iwrr_socket, 16)
+            except:
+
+                print("Responder: socket: Connection closed by initiator")
+
+                return False
+
+            if request == b'':
+                print("Responder: socket: Connection closed by initiator")
+                return False
+
+            request_packet = packet.packet()
+            result = request_packet.decode( self.unstringify_packet(request) )
+
+            print("Responder: socket: Received a request from initiator: {_packet}".format( _packet = self.stringify_packet( request_packet.bytes ) ))
+            
+            if(result):
+                print("Responder: socket: No errors in received packet.")
+            else:
+                print("Responder: socket: Error in received packet.")
+
+            request_packet.info()
+
+            # Handle read operation.
+
+            if( request_packet.read and result ):
+
+                reg_name = self.device.registers[request_packet.reg].name
+
+                print("Responder: socket: Processing read request for register ID {_regid} and name {_regname}".format( _regid = request_packet.reg, _regname = reg_name ))
+
+                reg_value = self.device.registers[request_packet.reg].value
+
+                try:
+
+                    print("Responder: socket: Calling user provided callback function.")
+
+                    self.callback_table[request_packet.reg][1]( self, self.device.registers[request_packet.reg].name, request_packet)
+
+                    print("Responder: socket: User provided callback function is called.")
+
+                except:
+
+                    print("Responder: socket: No callback function provided for register")
+
+                    pass
+
+                response_packet = packet.packet()
+
+                print("Responder: socket: Encoding response packet")
+
+                response_packet.encode( device_id = request_packet.device_id, ack = True, read = True, write = False, reg = request_packet.reg, value = self.device.registers[request_packet.reg].value )
+
+                print("Responder: socket: Encoded response packet information")
+
+                response_packet.info()
+
+                string_response_packet = self.stringify_packet(response_packet.bytes)
+
+                try:
+
+                    result = True
+
+                    self.irrw_socket.sendall(string_response_packet)
+
+                except:
+
+                    result = False
+
+            # Handle write operation.
+
+            if( request_packet.write and result ):
+
+                reg_name = self.device.registers[request_packet.reg].name
+
+                self.device.registers[request_packet.reg].value = request_packet.value
+
+                print("Responder: socket: Processing write request for register ID {_regid} and name {_regname}".format( _regid = request_packet.reg, _regname = reg_name ))
+
+                try:
+
+                    print("Responder: socket: Calling user provided callback function.")
+
+                    self.callback_table[request_packet.reg][1]( self, self.device.registers[request_packet.reg].name, request_packet)
+
+                    print("Responder: socket: User provided callback function is called.")
+
+                except:
+
+                    print("Responder: socket: No callback function provided for register")
+
+                    pass
+
+                response_packet = packet.packet()
+
+                print("Responder: socket: Encoding response packet")
+
+                response_packet.encode( device_id = request_packet.device_id, ack = True, read = False, write = True, reg = request_packet.reg, value = self.device.registers[request_packet.reg].value )
+
+                print("Responder: socket: Encoded response packet information")
+
+                response_packet.info()
+
+                string_response_packet = self.stringify_packet(response_packet.bytes)
+
+                try:
+
+                    result = True
+
+                    self.irrw_socket.sendall(string_response_packet)
+
+                except:
+
+                    result = False
+
+        return result
+
+
+def reg_0_callback(r: responder, register_name: str, packet: packet.packet):
+    
+    if( packet.read ):
+
+        print("Register 0 read request received")
+
+    if( packet.write ):
+
+        print("Register 0 write request received")
+
+    print("Register 0 callback called")
+
+def reg_1_callback(r: responder, register_name: str, packet: packet.packet):
+    
+    if( packet.read ):
+
+        print("Register 1 read request received")
+
+    if( packet.write ):
+
+        print("Register 1 write request received")
+
+    print("Register 1 callback called")
+
+
+x = responder('test.yaml', InterfaceType.SOCKET)
+
+x.add_register_handle(0, reg_0_callback)
+x.add_register_handle(1, reg_1_callback)
+
+while x.process() == True:
+    pass

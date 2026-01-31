@@ -1,5 +1,5 @@
 
-from crc import Calculator, Crc8
+import crcmod
 
 class packet:
 
@@ -17,6 +17,17 @@ class packet:
 
         self.unencoded_bytes = []
         self.bytes = []
+
+    def crc8_ccitt(self, data: bytes, init=0x00, poly=0x07) -> int:
+        crc = init
+        for b in data:
+            crc ^= b
+            for _ in range(8):
+                if crc & 0x80:
+                    crc = ((crc << 1) & 0xFF) ^ poly
+                else:
+                    crc = (crc << 1) & 0xFF
+        return crc
 
     def encode(self, device_id: int, ack: bool, read: bool, write: bool, reg: int, value: int):
 
@@ -56,9 +67,7 @@ class packet:
 
         # Calculate CRC8-CCITT.
 
-        calculator = Calculator(Crc8.CCITT)
-
-        self.crc8 = calculator.checksum(self.unencoded_bytes[1:])
+        self.crc8 = self.crc8_ccitt(bytes(self.unencoded_bytes[1:]))
 
         # Add CRC8 to unencoded packet.
 
@@ -126,16 +135,19 @@ class packet:
         # Check length of byte string.
 
         if( len(bytes) != 16 ):
+            print("Packet: decode: Packet length expected to be 16 bytes ! Observed length = {_length}".format(_length=len(bytes)))
             return False
         
         # Check start of frame character.
 
         if( self.bytes[0] != int(0x2A) ):
+            print("Packet: decode: Invalid start of frame byte ! Expected: 0x2A, Observed: {_observed}".format(_observed = hex(self.bytes[0])))
             return False
         
         # Check end of frame character.
 
         if( self.bytes[15] != int(0x23) ):
+            print("Packet: decode: Invalid end of frame byte ! Expected: 0x23, Observed: {_observed}".format(_observed = hex(self.bytes[15])))
             return False
         
         # After frame checks, proceed to convert the encoded packet into
@@ -184,11 +196,10 @@ class packet:
 
         # Verify CRC8-CCITT.
 
-        calculator = Calculator(Crc8.CCITT)
-
-        self.crc8 = calculator.checksum(self.unencoded_bytes[1:7])
+        self.crc8 = self.crc8_ccitt(self.unencoded_bytes[1:8])        
 
         if(self.crc8 != 0):
+            print("Packet: decode: CRC8-CCITT verification failed.")
             return False
 
         # Extract device control byte.
@@ -230,3 +241,15 @@ class packet:
             return False
 
         return True
+    
+    def info(self):
+
+        print("\n\nPacket information:\n\n")
+
+        print("Device ID: {_deviceid}".format( _deviceid = self.device_id))
+        print("ACK: {_ack}".format(_ack = self.ack))
+        print("Read request: {_read}".format( _read = self.read ))
+        print("Write request: {_write}".format( _write = self.write ))
+        print("Register ID: {_regid}".format( _regid = self.reg))
+        print("Register value: {_regval}".format( _regval = self.value))
+        print("Packet CRC: {_crc}".format(_crc = self.crc8))
