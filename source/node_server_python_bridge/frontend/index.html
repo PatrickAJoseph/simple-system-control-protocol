@@ -1,27 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <title>Node ↔ Python Communication Demo</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Register Loader</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- YAML Parser -->
+  <script src="js-yml.js"></script>
 </head>
+<div id="customModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Message</h3>
+    <p id="modalMessage"></p>
+    <button onclick="closeModal()">OK</button>
+  </div>
+</div>
 
 <body>
 
-  <div class="container">
-    <h1>Command Sender</h1>
+  <h2>Upload Register YAML File</h2>
 
-    <input type="text" id="commandInput" placeholder="Enter command (e.g. calculate)" />
+  <input type="file" id="fileInput" accept=".yml,.yaml">
+  <button id="loadBtn">LOAD</button>
 
-    <input type="number" id="valueInput" placeholder="Enter value" />
+  <h3>Registers</h3>
 
-    <button onclick="sendCommand()">Send</button>
-
-    <pre id="output"></pre>
-  </div>
+  <table id="registerTable">
+    <thead>
+      <tr>
+        <th>Register Name</th>
+        <th>Parameter</th>
+        <th>Value</th>
+        <th>GET</th>
+        <th>SET</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script src="script.js"></script>
 </body>
-
 </html>
