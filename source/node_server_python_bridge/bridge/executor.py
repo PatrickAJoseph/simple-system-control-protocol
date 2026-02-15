@@ -29,7 +29,16 @@ try:
 
         command = json.loads(data.decode())
         print("Got command: ", command, " for execution")
-        result = process_command(command)
+        type = command["type"]
+        reg = command["register"]
+        param = command["parameter"]
+        
+        result = ""
+        if type and type == "set":
+            value = command["value"]
+            result = process_command(type, reg, param, value)
+        elif type and type == "get":
+            result = process_command(type, reg, param)
 
         conn.sendall(json.dumps(result).encode())
         conn.close()
