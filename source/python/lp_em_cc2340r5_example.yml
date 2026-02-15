@@ -21,8 +21,11 @@ defconfig:
   # Serial baud rate.
   serial_baud_rate: 115200
 
-  # BLE/socket base port number.
+  # Socket base port number.
   base_port: 3000
+
+  # Device serial number.
+  device_serial_number: 0000000001
 
   # Timeout
   interface_timeout_ms:  15000
@@ -183,3 +186,49 @@ regs:
       type: "uint"
       min: 0
       max: 7
+
+  reg_2:
+    number: 2
+    name: "BUTTON0"
+    comment: "Button 0 register."
+
+    parameter_0:
+      number: 0
+      name: "button0_state"
+      startbit: 0
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+    
+    parameter_1:
+      number: 1
+      name: "button0_press_count"
+      startbit: 1
+      bitlength: 31
+      type: "uint"
+      min: 0
+      max: 1000
+
+  reg_3:
+    number: 3
+    name: "BUTTON1"
+    comment: "Button 1 register."
+
+    parameter_0:
+      number: 0
+      name: "button1_state"
+      startbit: 0
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+    
+    parameter_1:
+      number: 1
+      name: "button1_press_count"
+      startbit: 1
+      bitlength: 31
+      type: "uint"
+      min: 0
+      max: 1000

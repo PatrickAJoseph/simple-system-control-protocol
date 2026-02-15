@@ -33,10 +33,47 @@ struct led_register
     uint32_t reserved           : 3;         //  Reserved bits.  
 };
 
+struct button_register
+{
+    uint32_t state              : 1;         // Current state of button.
+    uint32_t press_count        : 31;        // Number of times the button was pressed.
+};
+
 struct led_register led0_register;
 struct led_register led1_register;
+struct button_register button0_register;
+struct button_register button1_register;
 
 /* Define callbacks for registers. */
+
+void button0_register_callback(void* reg, int operation)
+{
+    struct button_register* button0 = reg;
+
+    if( operation == SSCP_REGISTER_OPERATION_READ )
+    {
+        button0->state = GPIO_read(CONFIG_GPIO_BUTTON_0);       
+    }
+    else if( operation == SSCP_REGISTER_OPERATION_WRITE )
+    {
+        
+    }
+}
+
+void button1_register_callback(void* reg, int operation)
+{
+    struct button_register* button0 = reg;
+
+    if( operation == SSCP_REGISTER_OPERATION_READ )
+    {
+        button0->state = GPIO_read(CONFIG_GPIO_BUTTON_1);       
+    }
+    else if( operation == SSCP_REGISTER_OPERATION_WRITE )
+    {
+        
+    }
+}
+
 
 void led0_register_callback(void* reg, int operation)
 {
@@ -120,6 +157,8 @@ static SSCP_REGISTER_HANDLE_LIST(sscpSerialHandleList)
 {
     SSCP_REGISTER_HANDLE( 0, led0_register, led0_register_callback ),
     SSCP_REGISTER_HANDLE( 1, led1_register, led1_register_callback ),
+    SSCP_REGISTER_HANDLE( 2, button0_register, button0_register_callback ),
+    SSCP_REGISTER_HANDLE( 3, button1_register, button1_register_callback ),
 };
 
 /* Function prototype for UART transmitter. */
@@ -159,6 +198,18 @@ void callbackFxn(UART2_Handle handle, void *buffer, size_t count, void *userArg,
     sem_post(&sem);
 }
 
+void gpioButtonCallback(uint_least8_t index)
+{
+    if( index == CONFIG_GPIO_BUTTON_0 )
+    {
+        button0_register.press_count++;
+    }
+    else if( index == CONFIG_GPIO_BUTTON_1 )
+    {
+        button1_register.press_count++;
+    }
+}
+
 
 /*
  *  ======== mainThread ========
@@ -175,6 +226,17 @@ void *mainThread(void *arg0)
     /* Configure the LED pins */
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_LED_1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
+    /* Configure buttons. */
+    GPIO_setConfig(CONFIG_GPIO_BUTTON_0, GPIO_CFG_IN_PU | GPIO_CFG_INT_FALLING_INTERNAL );
+    GPIO_setConfig(CONFIG_GPIO_BUTTON_1, GPIO_CFG_IN_PU | GPIO_CFG_INT_FALLING_INTERNAL );
+
+    /* Set interrupt callback */
+    GPIO_setCallback(CONFIG_GPIO_BUTTON_0, gpioButtonCallback);
+    GPIO_setCallback(CONFIG_GPIO_BUTTON_1, gpioButtonCallback);
+
+    GPIO_enableInt(CONFIG_GPIO_BUTTON_0);
+    GPIO_enableInt(CONFIG_GPIO_BUTTON_1);
 
     /* Create semaphore */
     semStatus = sem_init(&sem, 0, 0);

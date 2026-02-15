@@ -3,6 +3,11 @@ import packet
 import parser
 import socket
 import serial
+from bleak.backends.device import BLEDevice
+from bleak import BleakScanner
+from bleak import BleakClient
+import asyncio
+import time
 
 from enum import Enum
 from typing import IO
@@ -27,6 +32,38 @@ class initiator:
     iwrr_address: tuple
     irrw_address: tuple
     serialHandle: serial.Serial
+    bleDevice: BLEDevice
+
+    async def BLE_init(self):
+        # Scan for available BLE devices and determine if target device is available.
+
+        bleDevices = await BleakScanner.discover()
+
+        print("Initiator: BLE: Searching for BLE device with name: {_value}".format(_value = self.device.name))
+
+        for bleDevice in bleDevices:
+
+            print("Initiator: BLE: Current BLE device name: {_value}".format( _value = bleDevice.name ))
+
+            if bleDevice.name == self.device.name:
+
+                async with BleakClient(bleDevice) as client:
+
+                    deviceSerialNumber = await client.read_gatt_char('0000fff8-0000-1000-8000-00805f9b34fb')
+                    deviceID = await client.read_gatt_char('0000fff9-0000-1000-8000-00805f9b34fb')
+
+                    _deviceSerialNumber = int.from_bytes(deviceSerialNumber)
+                    _deviceID           = int.from_bytes(deviceID)
+
+                    print("Initiator: BLE: Observed device serial number: {_value}".format( _value = _deviceSerialNumber))
+                    print("Initiator: BLE: Observed device ID: {_value}".format( _value = _deviceID))
+
+                    if( self.device.deviceSerialNumber == _deviceSerialNumber and self.device.number == _deviceID ):
+
+                        print("Initiator: BLE: Device found !")
+                        self.bleDevice = bleDevice
+                        break
+
 
     def __init__(self, file:str, interface: InterfaceType):
 
@@ -92,6 +129,9 @@ class initiator:
 
             self.serialHandle.write("*1#".encode('utf-8'))
 
+        if( interface == InterfaceType.BLE ):
+            asyncio.run(self.BLE_init())
+
     def add_register_handle(self, reg: int, handle):
 
         is_unique = True
@@ -137,6 +177,51 @@ class initiator:
                 raise ConnectionError("Socket closed")
             data += chunk
         return data
+
+    async def BLE_read_register(self, name: str):
+
+        async with BleakClient(self.bleDevice) as client:
+
+            reg = self.device.get_register(name)
+
+            p = packet.packet()
+            p.encode( device_id = self.device.number, ack = False, read = True, write = False, reg = reg.number, value = 0 )
+
+            print("Initiator: BLE: Posting read request for register: {_name}".format(_name = name))
+
+            await client.write_gatt_char('0000fff6-0000-1000-8000-00805f9b34fb', self.stringify_packet(p.bytes))
+
+            print("Initiator: BLE: Requested for register: {_name}".format(_name = name))
+
+            response = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+            while( response == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'):
+                response = await client.read_gatt_char('0000fff7-0000-1000-8000-00805f9b34fb')
+
+            print("Initiator: BLE: Received response : {_response}".format(_response = self.stringify_packet(response)))
+
+            print("Initiator: BLE: Response packet information.")
+
+            response_packet = packet.packet()
+
+            ret = response_packet.decode(self.unstringify_packet(response))
+
+            response_packet.info()
+
+            if( ret == True ):
+
+                print("Initiator: BLE: Response packet valid.")
+
+                self.device.registers[response_packet.reg].set(response_packet.value)
+            else:
+
+                print("Initiator: BLE: Response packet invalid.")
+
+                response_packet.info()
+
+                pass
+
+
 
     def read_register(self, name: str):
 
@@ -190,9 +275,9 @@ class initiator:
 
             response = self.serialHandle.read(16)
 
-            print("Initiator: socket: Received response : {_response}".format(_response = self.stringify_packet(response)))
+            print("Initiator: serial: Received response : {_response}".format(_response = self.stringify_packet(response)))
 
-            print("Initiator: socket: Response packet information.")
+            print("Initiator: serial: Response packet information.")
 
             response_packet = packet.packet()
 
@@ -202,17 +287,71 @@ class initiator:
 
             if( ret == True ):
 
-                print("Initiator: socket: Response packet valid.")
+                print("Initiator: serial: Response packet valid.")
 
                 self.device.registers[response_packet.reg].set(response_packet.value)
             else:
 
-                print("Initiator: socket: Response packet invalid.")
+                print("Initiator: serial: Response packet invalid.")
 
                 response_packet.info()
 
                 pass
+        
+        if( self.interface == InterfaceType.BLE ):
+            asyncio.run(self.BLE_read_register(name))
 
+    async def BLE_write_register(self, name: str, _value):
+        
+        reg = self.device.get_register(name)
+
+        p = packet.packet()
+        p.encode( device_id = self.device.number, ack = False, read = False, write = True, reg = reg.number, value = _value )
+
+        async with BleakClient(self.bleDevice) as client:
+
+            print(self.stringify_packet(p.bytes))
+
+            await client.write_gatt_char('0000fff6-0000-1000-8000-00805f9b34fb', self.stringify_packet(p.bytes) )
+
+            print("Initiator: BLE: Requested for register: {_name}".format(_name = name))
+
+            response = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+            while( response == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'):
+                response = await client.read_gatt_char('0000fff7-0000-1000-8000-00805f9b34fb')
+
+            if( len(response) != 16 ):
+
+                print("Initiator: BLE: Timeout event.")
+
+                return False
+
+            else:
+
+                print("Initiator: BLE: Timeout event did not occur.")
+
+            print("Initiator: BLE: Received response : {_response}".format(_response = self.stringify_packet(response)))
+
+            print("Initiator: BLE: Response packet information.")
+
+            response_packet = packet.packet()
+
+            ret = response_packet.decode(self.unstringify_packet(response))
+
+            response_packet.info()
+
+            if( ret == True ):
+
+                print("Initiator: BLE: Response packet is valid.")
+
+            else:
+
+                print("Initiator: BLE: Response packet is invalid !")
+
+                response_packet.info()
+
+                pass
 
     def write_register(self, name: str, _value: int ):
 
@@ -298,6 +437,8 @@ class initiator:
 
                 pass
 
+        if( self.interface == InterfaceType.BLE ):
+            asyncio.run(self.BLE_write_register(name, _value))
 
     def set_parameter_value(self, name: str, value) -> bool:
         return self.device.set_parameter_value(name, value)

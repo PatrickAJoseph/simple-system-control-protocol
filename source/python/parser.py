@@ -106,9 +106,9 @@ class parameter:
         bitmask = (1 << int(self.bitlength) ) - 1
         bitpos = self.startbit
 
-        print("Parser: parameter: encode: Parameter name = {_x}".format(_x = self.name))
-        print("Parser: parameter: encode: Bitmask = {_x}".format(_x = self.bitlength))
-        print("Parser: parameter: encode: Start bit = {_x}".format(_x = self.startbit))
+        #print("Parser: parameter: encode: Parameter name = {_x}".format(_x = self.name))
+        #print("Parser: parameter: encode: Bitmask = {_x}".format(_x = self.bitlength))
+        #print("Parser: parameter: encode: Start bit = {_x}".format(_x = self.startbit))
 
         # Validate if parameter value is within range.
 
@@ -129,7 +129,7 @@ class parameter:
 
         result = result & 0xFFFFFFFF
 
-        print("Parser: parameter: encode: Parameter bitfield : {_x}".format( _x = hex(result) ))
+        #print("Parser: parameter: encode: Parameter bitfield : {_x}".format( _x = hex(result) ))
 
         return result
 
@@ -144,15 +144,15 @@ class parameter:
         bitmask = ( 1 << int(self.bitlength) ) - 1
         bitpos  = int(self.startbit)
 
-        print("Parser: parameter: decode: Parameter name: {_x}".format( _x = self.name))
-        print("Parser: parameter: decode: Bit mask: {_x}".format( _x = hex(bitmask)))
-        print("Parser: parameter: decode: Start bit: {_x}".format( _x = bitpos ))
+        #print("Parser: parameter: decode: Parameter name: {_x}".format( _x = self.name))
+        #print("Parser: parameter: decode: Bit mask: {_x}".format( _x = hex(bitmask)))
+        #print("Parser: parameter: decode: Start bit: {_x}".format( _x = bitpos ))
 
         # Extract bitfield for target parameter.
 
         result = (regval >> bitpos) & bitmask
 
-        print("Parser: parameter: decode: extracted result: {_value}".format( _value = hex(result) ))
+        #print("Parser: parameter: decode: extracted result: {_value}".format( _value = hex(result) ))
 
         # Limit range to 32-bits.
 
@@ -181,7 +181,7 @@ class parameter:
         if( self.type == parameter_type.FLOAT ):
             self.value = float( struct.unpack('!f', struct.pack('!I', result))[0] )
 
-        print("Parser: parameter: decode: parameter value = {_value}".format(_value = self.value))
+        #print("Parser: parameter: decode: parameter value = {_value}".format(_value = self.value))
 
         return self.value
 
@@ -189,19 +189,21 @@ class parameter:
 
     def info(self):
 
-        print("\n\n")
+        #print("\n\n")
 
-        print("Parameter name: {_name}".format(_name = self.name))
-        print("Parameter number: {_number}".format(_number = self.number))
-        print("Register number: {_number}".format(_number = self.reg))
-        print("Parameter start bit: {_startbit}".format(_startbit = self.startbit))
-        print("Parameter bit length: {_bitlength}".format(_bitlength = self.bitlength))
-        print("Parameter datatype: {_datatype}".format( _datatype = self.type))
-        print("Parameter minimum value: {_min}".format( _min = self.min ))
-        print("Parameter maximum value: {_max}".format( _max = self.max ))
-        print("Parameter value: {_value}".format( _value = self.value ))
+        #print("Parameter name: {_name}".format(_name = self.name))
+        #print("Parameter number: {_number}".format(_number = self.number))
+        #print("Register number: {_number}".format(_number = self.reg))
+        #print("Parameter start bit: {_startbit}".format(_startbit = self.startbit))
+        #print("Parameter bit length: {_bitlength}".format(_bitlength = self.bitlength))
+        #print("Parameter datatype: {_datatype}".format( _datatype = self.type))
+        #print("Parameter minimum value: {_min}".format( _min = self.min ))
+        #print("Parameter maximum value: {_max}".format( _max = self.max ))
+        #print("Parameter value: {_value}".format( _value = self.value ))
 
-        print("\n\n")
+        #print("\n\n")
+
+        pass
 
 # A class representing a register.
 
@@ -299,13 +301,15 @@ class register:
 
     def info(self):
 
-        print("\n\n")
+        #print("\n\n")
 
-        print("Register name: {_name}".format(_name = self.name))
-        print("Register number: {_value}".format(_value = self.number))
-        print("Register value: {_value}".format(_value = hex(self.value)))
+        #print("Register name: {_name}".format(_name = self.name))
+        #print("Register number: {_value}".format(_value = self.number))
+        #print("Register value: {_value}".format(_value = hex(self.value)))
 
-        print("\n\n")
+        #print("\n\n")
+
+        pass
 
 # Class to represent a device node.
 
@@ -317,6 +321,7 @@ class device:
     file: IO
     serialPort: str
     serialBaudRate: int
+    deviceSerialNumber: int
     interfaceTimeoutMilliseconds: int
 
     def __init__(self, file):
@@ -334,6 +339,7 @@ class device:
             name = data['defconfig']['name']
             number = int(data['defconfig']['device_number'])
             baseport = int(data['defconfig']['base_port'])
+            deviceSerialNumber = int(data['defconfig']['device_serial_number'])
 
             self.serialPort = data['defconfig']['serial_port']
             self.serialBaudRate = int(data['defconfig']['serial_baud_rate'])
@@ -342,6 +348,7 @@ class device:
             self.name = name
             self.number = number
             self.baseport = baseport
+            self.deviceSerialNumber = deviceSerialNumber
 
             # Count the number of registers.
 

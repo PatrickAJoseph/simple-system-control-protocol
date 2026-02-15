@@ -42,6 +42,12 @@ extern const uint_least8_t CONFIG_GPIO_LED_0_CONST;
 extern const uint_least8_t CONFIG_GPIO_LED_1_CONST;
 #define CONFIG_GPIO_LED_1 15
 
+extern const uint_least8_t CONFIG_GPIO_BUTTON_0_CONST;
+#define CONFIG_GPIO_BUTTON_0 10
+
+extern const uint_least8_t CONFIG_GPIO_BUTTON_1_CONST;
+#define CONFIG_GPIO_BUTTON_1 9
+
 /* Owned by CONFIG_UART2_0 as  */
 extern const uint_least8_t CONFIG_GPIO_UART2_0_TX_CONST;
 #define CONFIG_GPIO_UART2_0_TX 20
