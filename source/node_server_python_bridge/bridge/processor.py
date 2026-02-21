@@ -1,6 +1,6 @@
-def process_command(type, reg, param, value = 0):
+def process_command(type, reg, param, value = 10):
     if type == "get":
-        return {reg+param}
+        return value
     elif type == "set":
-        return f"set value {value}"
+        return value
     return {"error": "Unknown command"}

@@ -57,7 +57,7 @@ function populateTable(parsedData) {
             <input type="number" value="0">
           </td>
           <td>
-            <button onclick="getValue('${regKey}', '${paramName}')">
+            <button onclick="getValue('${regKey}', '${paramName}', this)">
               GET
             </button>
           </td>
@@ -88,18 +88,7 @@ function closeModal() {
   document.getElementById("customModal").style.display = "none";
 }
 
-
-/* Placeholder handlers */
-// function getValue(reg, param) {
-//   showAlert("Register Read", `GET ${reg} → ${param}`);
-// }
-
-// function setValue(reg, param, btn) {
-//   const value = btn.closest("tr").querySelector("input").value;
-//   showAlert("Register Set", `SET ${reg} → ${param}`);
-// }
-
-async function getValue(reg, param) {
+async function getValue(reg, param, btn) {
   console.log ("Get request is called");
   try {
     const response = await fetch(`${API_BASE}/api/get/${reg}/${param}`, {
@@ -107,8 +96,12 @@ async function getValue(reg, param) {
     });
 
     const data = await response.json();
-    console.log("res: ", data);
-    alert(`Value: ${data.result.result}`);
+    // console.log("res: ", data);
+
+    const row = btn.closest("tr");
+    const input = row.querySelector("input");
+    input.value = data.result;
+    alert(`Get Value: ${data.result}`);
   } catch (err) {
     console.error(err);
     alert("GET request failed");
@@ -134,7 +127,10 @@ async function setValue(reg, param, btn) {
 
     const data = await response.json();
     console.log("data: ", data);
-    alert(data.result);
+    const row = btn.closest("tr");
+    const input = row.querySelector("input");
+    input.value = data.result;
+    alert(`Set Value: ${data.result}`);
   } catch (err) {
     console.error(err);
     alert("SET request failed");
