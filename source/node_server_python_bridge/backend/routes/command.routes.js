@@ -14,6 +14,17 @@ router.post("/set", async (req, res) => {
   }
 });
 
+router.post("/connect", async (req,res) => {
+  console.log("Call has come to connect to device", req.body);
+  try {
+    const result = await sendCommand(req.body);
+    res.json({ success: true, result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 router.get("/get/:register/:parameter", async (req, res) => {
   const register = req.params.register;
   const parameter = req.params.parameter;

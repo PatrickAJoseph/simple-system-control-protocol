@@ -1,4 +1,5 @@
 let selectedFile = null;
+let isFileLoaded = false;
 const API_BASE = "http://localhost:3000";
 
 document.getElementById("fileInput").addEventListener("change", (e) => {
@@ -6,6 +7,28 @@ document.getElementById("fileInput").addEventListener("change", (e) => {
 });
 
 document.getElementById("loadBtn").addEventListener("click", loadYaml);
+document.getElementById("connect").addEventListener("click", connectToDevice);
+
+async function connectToDevice() {
+  console.log("Connect to device function called");
+
+  try {
+    const response = await fetch(`${API_BASE}/api/connect`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        type: 'connect'
+      })
+    });
+
+    alert(`Connected to device`);
+  } catch (err) {
+    console.error(err);
+    alert("GET request failed");
+  }
+}
 
 function loadYaml() {
   if (!selectedFile) {
@@ -13,17 +36,38 @@ function loadYaml() {
     return;
   }
   const reader = new FileReader();
-  reader.onload = (e) => {
-    console.log("inside reader.onload");
-    try {
-      const parsed = jsyaml.load(e.target.result);
-      console.log("Parsed YAML:", parsed);
-      populateTable(parsed);
-    } catch (err) {
-      console.error(err);
-      showAlert("Invalid YAML format");
+reader.onload = async (e) => {
+  try {
+    const yamlContent = e.target.result;
+
+    // Save temp YAML file on backend
+    const saveResponse = await fetch(`${API_BASE}/api/save-config`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        filename: "config.yml",
+        content: yamlContent
+      })
+    });
+
+    if (!saveResponse.ok) {
+      throw new Error("Failed to save YAML file");
     }
+
+    const saveResult = await saveResponse.json();
+    console.log("Temp file created at:", saveResult.path);
+
+    // Continue parsing locally
+    const parsed = jsyaml.load(yamlContent);
+    populateTable(parsed);
+
+  } catch (err) {
+    console.error(err);
+    showAlert("Invalid YAML format or save failed");
   }
+};
   reader.readAsText(selectedFile);
 }
 function populateTable(parsedData) {
@@ -100,14 +144,14 @@ function closeModal() {
 // }
 
 async function getValue(reg, param) {
-  console.log ("Get request is called");
+  //console.log ("Get request is called");
   try {
     const response = await fetch(`${API_BASE}/api/get/${reg}/${param}`, {
       method: "GET",
     });
 
     const data = await response.json();
-    console.log("res: ", data);
+    //console.log("res: ", data);
     alert(`Value: ${data.result.result}`);
   } catch (err) {
     console.error(err);
@@ -133,7 +177,7 @@ async function setValue(reg, param, btn) {
     });
 
     const data = await response.json();
-    console.log("data: ", data);
+    //console.log("data: ", data);
     alert(data.result);
   } catch (err) {
     console.error(err);

@@ -8,10 +8,12 @@ exports.sendCommand = (payload) => {
     const client = new net.Socket();
 
     client.connect(PORT, HOST, () => {
+      console.log("JSON payload to be sent to Python script:" + JSON.stringify(payload))
       client.write(JSON.stringify(payload));
     });
 
     client.on("data", (data) => {
+      console.log("JSON payload received from Python script:" + data.toString())
       resolve(JSON.parse(data.toString()));
       client.destroy();
     });
