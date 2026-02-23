@@ -101,7 +101,7 @@ function populateTable(parsedData) {
             <input type="number" value="0">
           </td>
           <td>
-            <button onclick="getValue('${regKey}', '${paramName}')">
+            <button onclick="getValue('${regKey}', '${paramName}', this)">
               GET
             </button>
           </td>
