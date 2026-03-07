@@ -10,6 +10,8 @@
 defconfig:
   
   # Device name.
+  # Required for identifying the device with using BLE.
+
   name: "test_lp_em_cc2340r5"
 
   # Common configuration settings.
@@ -25,9 +27,11 @@ defconfig:
   base_port: 3000
 
   # Device serial number.
+  # Required for BLE mode. Each device must store this serial number
+  # in its non-volatile memory.
   device_serial_number: 0000000001
 
-  # Timeout
+  # Interface communication timeout in milli-seconds.
   interface_timeout_ms:  15000
 
 ### Device register description.

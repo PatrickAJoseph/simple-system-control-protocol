@@ -1,0 +1,185 @@
+defconfig:
+  base_port: 3000
+  device_number: 0
+  device_serial_number: 1
+  interface_timeout_ms: 15000
+  name: test_lp_em_cc2340r5
+  serial_baud_rate: 115200
+  serial_port: COM9
+regs:
+  reg_0:
+    comment: LED0 control register.
+    name: LED0_CONTROL
+    number: 0
+    parameter_0:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led0_state
+      number: 0
+      startbit: 0
+      type: uint
+    parameter_1:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led0_on
+      number: 1
+      startbit: 1
+      type: uint
+    parameter_2:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led0_off
+      number: 2
+      startbit: 2
+      type: uint
+    parameter_3:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led0_toggle
+      number: 3
+      startbit: 3
+      type: uint
+    parameter_4:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led0_blink
+      number: 4
+      startbit: 4
+      type: uint
+    parameter_5:
+      bitlength: 8
+      max: 255
+      min: 0
+      name: led0_blink_count
+      number: 5
+      startbit: 5
+      type: uint
+    parameter_6:
+      bitlength: 16
+      max: 10000
+      min: 0
+      name: led0_blink_interval_ms
+      number: 6
+      startbit: 13
+      type: uint
+    parameter_7:
+      bitlength: 3
+      max: 7
+      min: 0
+      name: led0_reserved
+      number: 7
+      startbit: 29
+      type: uint
+  reg_1:
+    comment: LED1 control register.
+    name: LED1_CONTROL
+    number: 1
+    parameter_0:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led1_state
+      number: 0
+      startbit: 0
+      type: uint
+    parameter_1:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led1_on
+      number: 1
+      startbit: 1
+      type: uint
+    parameter_2:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led1_off
+      number: 2
+      startbit: 2
+      type: uint
+    parameter_3:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led1_toggle
+      number: 3
+      startbit: 3
+      type: uint
+    parameter_4:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: led1_blink
+      number: 4
+      startbit: 4
+      type: uint
+    parameter_5:
+      bitlength: 8
+      max: 255
+      min: 0
+      name: led1_blink_count
+      number: 5
+      startbit: 5
+      type: uint
+    parameter_6:
+      bitlength: 16
+      max: 10000
+      min: 0
+      name: led1_blink_interval_ms
+      number: 6
+      startbit: 13
+      type: uint
+    parameter_7:
+      bitlength: 3
+      max: 7
+      min: 0
+      name: led1_reserved
+      number: 7
+      startbit: 29
+      type: uint
+  reg_2:
+    comment: Button 0 register.
+    name: BUTTON0
+    number: 2
+    parameter_0:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: button0_state
+      number: 0
+      startbit: 0
+      type: uint
+    parameter_1:
+      bitlength: 31
+      max: 1000
+      min: 0
+      name: button0_press_count
+      number: 1
+      startbit: 1
+      type: uint
+  reg_3:
+    comment: Button 1 register.
+    name: BUTTON1
+    number: 3
+    parameter_0:
+      bitlength: 1
+      max: 1
+      min: 0
+      name: button1_state
+      number: 0
+      startbit: 0
+      type: uint
+    parameter_1:
+      bitlength: 31
+      max: 1000
+      min: 0
+      name: button1_press_count
+      number: 1
+      startbit: 1
+      type: uint

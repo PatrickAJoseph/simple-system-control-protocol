@@ -43,7 +43,7 @@ SSCP_Handle  name = {                                                           
 /* Number of packets which can be held by the request FIFO. */
 
 #ifndef SSCP_REQUEST_FIFO_SIZE
-#define SSCP_REQUEST_FIFO_SIZE      8
+#define SSCP_REQUEST_FIFO_SIZE      16
 #endif
 
 /* Status words for request FIFO. */
