@@ -1,6 +1,6 @@
 defconfig:
   base_port: 3000
-  device_name: default
+  device_name: test_lp_em_cc2340r5
   device_number: 0
   device_serial_number: 1
   interface_timeout_ms: 10000

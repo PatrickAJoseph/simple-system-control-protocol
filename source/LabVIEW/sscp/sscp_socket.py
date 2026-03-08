@@ -50,6 +50,8 @@ try:
 except:
     interfaceType = "SERIAL"
 
+print(f"Interface type: {interfaceType}")
+
 connectionActive = False
 
 with open(configFileName, "r") as configFile:
