@@ -53,5 +53,36 @@ def process_command(type, reg, param, value = 0):
             rc = -1
 
         return "{{'type':set , 'register': '{_reg}', 'parameter': '{_param}', 'value': '{_value}', 'return_code': '{_rc}'}}".format(_reg = reg, _param = param, _value= value, _rc = rc)
-    
+    elif type == "read-register":
+        print("Register to read: {_reg}".format(_reg = reg))
+        rc = 0
+        value = 0
+
+        try:
+            value = processor_initiator.read_register(reg)
+        except:
+            rc = -1
+
+        return "{{'type':read-register , 'register': '{_reg}', 'value': '{_value}', 'return_code': '{_rc}'}}".format(_reg = reg, _value= value, _rc = rc)
+    elif type == "write-register":
+        print("Register to write: {_reg}".format(_reg = reg))
+        rc = 0
+        value = 0
+
+        try:
+            print ("Calling write_register function of initiator with reg: {_reg} and value: {_value}".format(_reg = reg, _value = value))
+            processor_initiator.write_register(reg, value)
+        except:
+            rc = -1
+    elif type == "set-param-in-device":
+        print("Register to set parameter in device: {_reg}".format(_reg = reg))
+        rc = 0
+        value = 0
+
+        try:
+            processor_initiator.set_parameter_value_in_device(reg, param)
+        except:
+            rc = -1
+
+        return "{{'type':set-param-in-device , 'register': '{_reg}', 'parameter': '{_param}', 'value': '{_value}', 'return_code': '{_rc}'}}".format(_reg = reg, _param = param, _value= value, _rc = rc)
     return "{'error': 'Unknown command'}"

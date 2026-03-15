@@ -224,7 +224,7 @@ class initiator:
 
 
     def read_register(self, name: str):
-
+        print("reaad register function called with name: {_name}".format(_name = name))
         reg = self.device.get_register(name)
 
         p = packet.packet()
@@ -369,7 +369,6 @@ class initiator:
             return ret
 
     def write_register(self, name: str, _value: int ):
-
         reg = self.device.get_register(name)
 
         p = packet.packet()

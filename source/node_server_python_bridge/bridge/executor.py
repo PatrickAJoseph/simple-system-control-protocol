@@ -26,13 +26,20 @@ try:
         except socket.timeout:
             continue   # loop again, allows Ctrl+C to be processed
 
-        data = conn.recv(2048)
-
-        if not data:
+        try:
+            data = conn.recv(2048)
+        except ConnectionResetError:
+            print("Client connection reset.")
             conn.close()
             continue
 
-        command = json.loads(data.decode())
+        try:
+            command = json.loads(data.decode())
+        except Exception as e:
+            print("Invalid JSON received:", e)
+            conn.close()
+            continue
+        
         print("Got command: ", command, " for execution")
         
         result = ""
@@ -50,6 +57,17 @@ try:
             result = process_command(type, reg, param)
         elif type and type == "connect":
             result = process_command(type, reg = "", param = "", value = 0)
+        elif type and type == "read-register":
+            reg = command["register"]
+            result = process_command(type, reg, param = "", value = 0)
+        elif type and type == "write-register":
+            reg = command["register"]
+            value = command["value"]
+            result = process_command(type, reg, param = "", value = value)
+        elif type and type == "set-param-in-device":
+            reg = command["register"]
+            param = command["parameter"]
+            result = process_command(type, reg, param, value = 0)
 
         print("Response of process_command function: {_response}".format(_response = result))
 
