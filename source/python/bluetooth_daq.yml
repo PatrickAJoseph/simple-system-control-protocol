@@ -1,0 +1,627 @@
+
+# Each device requires a seperate YAML file.
+# This ensures modularity with respect to the application.
+# Each connection to a device requires a seperate YAML file.
+
+defconfig:
+  
+  # Device name.
+  # Required for identifying the device with using BLE.
+
+  name: "bluetooth_daq"
+
+  # Common configuration settings.
+  device_number: 0
+
+  # Serial interface COM port.
+  serial_port: "COM13"
+
+  # Serial baud rate.
+  serial_baud_rate: 115200
+
+  # Socket base port number.
+  base_port: 3000
+
+  # Device serial number.
+  # Required for BLE mode. Each device must store this serial number
+  # in its non-volatile memory.
+  device_serial_number: 0000000001
+
+  # Interface communication timeout in milli-seconds.
+  interface_timeout_ms:  15000
+
+### Device register description.
+
+regs:
+  reg_0:
+    number: 0
+    name: "GPIO_WRITE"
+    comment: "GPIO write register."
+
+    parameter_0:
+      number: 0
+      name: "GPIO_write_value"
+      startbit: 0
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+    
+    parameter_1:
+      number: 1
+      name: "GPIO_write_value_reserved"
+      startbit: 16
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+
+  reg_1:
+    number: 1
+    name: "GPIO_TOGGLE"
+    comment: "GPIO Toggle Register."
+
+    parameter_0:
+      number: 0
+      name: "GPIO_toggle_value"
+      startbit: 0
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+    
+    parameter_1:
+      number: 1
+      name: "GPIO_toggle_value_reserved"
+      startbit: 16
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+
+  reg_2:
+    number: 2
+    name: "GPIO_READ"
+    comment: "GPIO Read Register."
+
+    parameter_0:
+      number: 0
+      name: "GPIO_read_value"
+      startbit: 0
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+    
+    parameter_1:
+      number: 1
+      name: "GPIO_read_value_reserved"
+      startbit: 16
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+
+  reg_3:
+    number: 3
+    name: "GPIO_PINCTRL"
+    comment: "GPIO Pin Control Register."
+
+    parameter_0:
+      number: 0
+      name: "GPIO_PINCTRL_input_select"
+      startbit: 0
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+    
+    parameter_1:
+      number: 1
+      name: "GPIO_PINCTRL_pin_index"
+      startbit: 1
+      bitlength: 4
+      type: "uint"
+      min: 0
+      max: 15
+
+    parameter_2:
+      number: 2
+      name: "GPIO_PINCTRL_read"
+      startbit: 5
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_3:
+      number: 3
+      name: "GPIO_PINCTRL_write"
+      startbit: 6
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_4:
+      number: 4
+      name: "GPIO_PINCTRL_toggle"
+      startbit: 7
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_5:
+      number: 5
+      name: "GPIO_PINCTRL_value"
+      startbit: 8
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_6:
+      number: 6
+      name: "GPIO_PINCTRL_reserved"
+      startbit: 9
+      bitlength: 23
+      type: "uint"
+      min: 0
+      max: 1
+
+  reg_4:
+    number: 4
+    name: "SPI_CONTROL"
+    comment: "SPI control register."
+
+    parameter_0:
+      number: 0
+      name: "SPI_CONTROL_bit_rate"
+      startbit: 0
+      bitlength: 11
+      type: "uint"
+      min: 0
+      max: 400
+
+    parameter_1:
+      number: 1
+      name: "SPI_CONTROL_frame_format"
+      startbit: 11
+      bitlength: 2
+      type: "uint"
+      min: 0
+      max: 3
+
+    parameter_2:
+      number: 2
+      name: "SPI_CONTROL_transfer_size"
+      startbit: 13
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_3:
+      number: 3
+      name: "SPI_CONTROL_cs_polarity"
+      startbit: 21
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_4:
+      number: 4
+      name: "SPI_CONTROL_transfer"
+      startbit: 22
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_5:
+      number: 5
+      name: "SPI_CONTROL_status"
+      startbit: 23
+      bitlength: 3
+      type: "uint"
+      min: 0
+      max: 3
+
+    parameter_6:
+      number: 6
+      name: "SPI_CONTROL_reserved"
+      startbit: 26
+      bitlength: 6
+      type: "uint"
+      min: 0
+      max: 3
+
+  reg_5:
+    number: 5
+    name: "SPI_READ_DATA"
+    comment: "SPI read data register."
+
+    parameter_0:
+      number: 0
+      name: "SPI_READ_DATA_index"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "SPI_READ_DATA_byte"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+  reg_6:
+    number: 6
+    name: "SPI_WRITE_DATA"
+    comment: "SPI write data register."
+
+    parameter_0:
+      number: 0
+      name: "SPI_WRITE_DATA_index"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "SPI_WRITE_DATA_byte"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+  reg_7:
+    number: 7
+    name: "UART_PHY_CONTROL"
+    comment: "UART physical layer control register."
+
+    parameter_0:
+      number: 0
+      name: "UART_PHY_CONTROL_baudrate"
+      startbit: 0
+      bitlength: 24
+      type: "uint"
+      min: 0
+      max: 3000000
+
+    parameter_1:
+      number: 1
+      name: "UART_PHY_CONTROL_stopbits"
+      startbit: 24
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_2:
+      number: 2
+      name: "UART_PHY_CONTROL_parity"
+      startbit: 25
+      bitlength: 2
+      type: "uint"
+      min: 0
+      max: 3
+
+    parameter_3:
+      number: 3
+      name: "UART_PHY_CONTROL_reserved"
+      startbit: 27
+      bitlength: 5
+      type: "uint"
+      min: 0
+      max: 1
+
+  reg_8:
+    number: 8
+    name: "UART_TRANSFER_CONFIG"
+    comment: "UART transfer configuration register."
+
+    parameter_0:
+      number: 0
+      name: "UART_TRANSFER_CONFIG_readsize"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "UART_TRANSFER_CONFIG_writesize"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_2:
+      number: 2
+      name: "UART_TRANSFER_CONFIG_timeout"
+      startbit: 16
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 60000
+
+  reg_9:
+    number: 9
+    name: "UART_TRANSFER_CONTROL"
+    comment: "UART transfer control register."
+
+    parameter_0:
+      number: 0
+      name: "UART_TRANSFER_CONTROL_mode"
+      startbit: 0
+      bitlength: 2
+      type: "uint"
+      min: 0
+      max: 3
+
+    parameter_1:
+      number: 1
+      name: "UART_TRANSFER_CONTROL_cancel"
+      startbit: 2
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_2:
+      number: 2
+      name: "UART_TRANSFER_CONTROL_transfer"
+      startbit: 3
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_3:
+      number: 3
+      name: "UART_TRANSFER_CONTROL_read_write_interval"
+      startbit: 4
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 60000
+
+    parameter_4:
+      number: 4
+      name: "UART_TRANSFER_CONTROL_reserved"
+      startbit: 20
+      bitlength: 12
+      type: "uint"
+      min: 0
+      max: 3
+
+  reg_10:
+    number: 10
+    name: "UART_READ_DATA"
+    comment: "UART read data register."
+
+    parameter_0:
+      number: 0
+      name: "UART_READ_DATA_index"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "UART_READ_DATA_byte"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_2:
+      number: 2
+      name: "UART_READ_DATA_read_count"
+      startbit: 16
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_3:
+      number: 3
+      name: "UART_READ_DATA_reserved"
+      startbit: 24
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+  reg_11:
+    number: 11
+    name: "UART_WRITE_DATA"
+    comment: "UART write data register."
+
+    parameter_0:
+      number: 0
+      name: "UART_WRITE_DATA_index"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "UART_WRITE_DATA_byte"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_2:
+      number: 2
+      name: "UART_WRITE_DATA_reserved"
+      startbit: 16
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+
+  reg_12:
+    number: 12
+    name: "I2C_CONTROL_REG"
+    comment: "I2C control register."
+
+    parameter_0:
+      number: 0
+      name: "I2C_CONTROL_fast_mode_enable"
+      startbit: 0
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_1:
+      number: 1
+      name: "I2C_CONTROL_address"
+      startbit: 1
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 127
+
+    parameter_2:
+      number: 2
+      name: "I2C_CONTROL_timeout"
+      startbit: 9
+      bitlength: 23
+      type: "uint"
+      min: 0
+      max: 10000000
+
+  reg_13:
+    number: 13
+    name: "I2C_TRANSFER_CONFIG_REG"
+    comment: "I2C transfer configuration register."
+
+    parameter_0:
+      number: 0
+      name: "I2C_TRANSFER_CONFIG_readsize"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "I2C_TRANSFER_CONFIG_writesize"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_2:
+      number: 2
+      name: "I2C_TRANSFER_CONFIG_status"
+      startbit: 16
+      bitlength: 3
+      type: "uint"
+      min: 0
+      max: 7
+
+    parameter_3:
+      number: 3
+      name: "I2C_TRANSFER_CONFIG_transfer"
+      startbit: 19
+      bitlength: 1
+      type: "uint"
+      min: 0
+      max: 1
+
+    parameter_4:
+      number: 4
+      name: "I2C_TRANSFER_CONFIG_reserved"
+      startbit: 20
+      bitlength: 12
+      type: "uint"
+      min: 0
+      max: 4095
+
+  reg_14:
+    number: 14
+    name: "I2C_READ_DATA_REG"
+    comment: "I2C read data register."
+
+    parameter_0:
+      number: 0
+      name: "I2C_READ_DATA_index"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "I2C_READ_DATA_byte"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_2:
+      number: 2
+      name: "I2C_READ_DATA_reserved"
+      startbit: 16
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535
+
+  reg_15:
+    number: 15
+    name: "I2C_WRITE_DATA_REG"
+    comment: "I2C write data register."
+
+    parameter_0:
+      number: 0
+      name: "I2C_WRITE_DATA_index"
+      startbit: 0
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_1:
+      number: 1
+      name: "I2C_WRITE_DATA_byte"
+      startbit: 8
+      bitlength: 8
+      type: "uint"
+      min: 0
+      max: 255
+
+    parameter_2:
+      number: 2
+      name: "I2C_WRITE_DATA_reserved"
+      startbit: 16
+      bitlength: 16
+      type: "uint"
+      min: 0
+      max: 65535

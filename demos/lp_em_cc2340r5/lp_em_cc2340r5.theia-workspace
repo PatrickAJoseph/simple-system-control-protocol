@@ -5,6 +5,9 @@
     },
     {
       "path": ""
+    },
+    {
+      "path": "file:///f%3A/Projects/bluetooth-daq/software/bluetooth-daq-lp-em-cc2340r5"
     }
   ],
   "settings": {}
